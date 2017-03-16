@@ -32,7 +32,7 @@ This will also download the markdown package.
 
 Let's create our HTML first by replacing `dist/index.html` with the following:
 
-!ADD_TO dist/index.html
+!ADD_TO{replace} dist/index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -40,7 +40,7 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
   </head>
   <h1>Markdown Preview-o-tron 7000!</h1>
   <form id="editor">
-    <textarea id="source" rows=10 cols=80"></textarea>
+    <textarea id="source" rows="10" cols="80"></textarea>
     <br>
     <input type="submit" value="Preview!">
   </form>
@@ -53,15 +53,15 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
 The way our amazing markdown app will work is that we'll create a function that, given some ids, can attach itself to a form to render a preview.  We'll assume that function
 creates an event listener we can give to our form.  So, in `index.js`, let's write:
 
-!ADD_TO js/index.js
+!ADD_TO{replace} js/index.js
 import markdownPreviewer from "./markdownPreviewer";
 
 window.onload = function() {
   document.getElementById("editor").addEventListener(
       "submit",
-      markdownPreviewer.attachPreviewer(document,
-                                        "source",
-                                        "preview"));
+      markdownPreviewer.attachPreviewer(document,    // pass in document
+                                        "source",    // id of source textarea
+                                        "preview")); // id of preview DOM element
 };
 !END ADD_TO
 
@@ -130,5 +130,24 @@ file being processed".  That's not the design choice _I_ would've made, but that
 
 Meaning: third-party libraries don't get a dot or slash in front, while your code gets both.
 
-Restore your `import` statement and look at the rest of the code.  It's not super interesting as we're just finding some elements based on the IDs given, and calling the
-`toHTML()` function provided by the markdown library.
+Restore your `import` statement and look at the rest of the code.  It's not super interesting as we're just finding some elements based on the IDs given, and calling the `toHTML()` function provided by the markdown library.
+
+Let's package everything up and see if it works.
+
+!SH yarn run webpack
+
+If we open up `dist/index.html`, we should see our UI:
+
+!SCREENSHOT dist/index.html markdown_screen.png
+
+And, if you type in some markdown and hit the submit button, voila it's rendered inline by our markdown library:
+
+!SCREENSHOT dist/index.html markdown_screen.png
+
+Who would've thought it takes 1,000 words to talk about using third party libraries, but this is JavaScript and we
+should be thankful Webpack exists to make up for the language's deficiencies.
+
+We mentioned earlier that we passed `document` into our `attachPreviewer` function to facilitate testing.  We
+should probably look into testing at this point because a) I get nervous writing untested code and b) things we'll
+learn later, like CSS and ES6, will definitely break things and we want to make sure we can continue to run tests
+as we use more sophisticated features of Webpack.
