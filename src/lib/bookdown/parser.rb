@@ -72,8 +72,10 @@ module Bookdown
                                         end
                 if options.include?("replace")
                   puts "Deleting #{inside_add_to}"
-                  rm inside_add_to
+                  rm_f inside_add_to
                 end
+                path = Pathname(inside_add_to)
+                mkdir_p path.dirname
                 file.puts "```#{language(inside_add_to)}"
               else
                 file.puts line

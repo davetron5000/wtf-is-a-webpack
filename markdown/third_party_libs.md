@@ -38,15 +38,17 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
   <head>
     <script src="bundle.js"></script>
   </head>
-  <h1>Markdown Preview-o-tron 7000!</h1>
-  <form id="editor">
-    <textarea id="source" rows="10" cols="80"></textarea>
-    <br>
-    <input type="submit" value="Preview!">
-  </form>
-  <hr>
-  <section id="preview">
-  </section>
+  <body>
+    <h1>Markdown Preview-o-tron 7000!</h1>
+    <form id="editor">
+      <textarea id="source" rows="10" cols="80"></textarea>
+      <br>
+      <input type="submit" value="Preview!">
+    </form>
+    <hr>
+    <section id="preview">
+    </section>
+  </body>
 </html>
 !END ADD_TO
 
