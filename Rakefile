@@ -1,3 +1,12 @@
+FILES = [
+  "intro",
+  "third_party_libs",
+  "testing",
+  "production",
+]
 task :default do
-  sh("ruby src/mk_md.rb markdown/intro.md markdown/third_party_libs.md markdown/testing.md markdown/production.md")
+  args = FILES.map { |file|
+    "'markdown/#{file}.md'"
+  }.join(" ")
+  sh("ruby src/mk_md.rb #{args}")
 end

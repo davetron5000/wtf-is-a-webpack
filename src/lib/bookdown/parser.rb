@@ -16,7 +16,7 @@ module Bookdown
     end
 
     def parse(file)
-      inside_add_to = false
+      existing_add_to_directive = nil
       inside_package_json = false
       package_json = ""
 
@@ -41,13 +41,13 @@ module Bookdown
                 package_json = ""
               elsif line =~ /^!END ADD_TO *$/
                 file.puts "```"
-                inside_add_to = false
+                existing_add_to_directive = nil
               elsif inside_package_json
                 package_json << line
-              elsif inside_add_to
-                File.open(inside_add_to,"a") do |file_to_add_to|
-                  file.puts line
-                  file_to_add_to.puts line
+              elsif existing_add_to_directive
+                queue = existing_add_to_directive.append(line)
+                queue.each do |command|
+                  command.execute(file)
                 end
               elsif line =~ /^!DUMP_CONSOLE (.*)$/
                 html = $1
@@ -63,20 +63,13 @@ module Bookdown
               elsif line =~/^!PACKAGE_JSON *$/
                 raise "already inside an PACKAGE_JSON" if inside_package_json
                 inside_package_json = true
-              elsif line =~/^!ADD_TO({.*})? (.*)$/
-                raise "already inside an ADD_TO" if inside_add_to
-                inside_add_to,options = if $2.nil?
-                                          [$1,[]]
-                                        else
-                                          [$2,$1.to_s.gsub(/[{}]/,'').split(/,/)]
-                                        end
-                if options.include?("replace")
-                  puts "Deleting #{inside_add_to}"
-                  rm_f inside_add_to
+              elsif add_to_directive = Bookdown::Directives::AddTo.recognize(line)
+                raise "already inside an ADD_TO" if existing_add_to_directive
+                existing_add_to_directive = add_to_directive
+                queue = existing_add_to_directive.execute
+                queue.each do |command|
+                  command.execute(file)
                 end
-                path = Pathname(inside_add_to)
-                mkdir_p path.dirname
-                file.puts "```#{language(inside_add_to)}"
               else
                 file.puts line
               end
