@@ -42,7 +42,7 @@ module Bookdown
           raise status.inspect + "\n" + stdout + "\n" + stderr
         end
         io.puts "```"
-        io.string
+        [Commands::PutsToFileIO.new(io.string)]
       end
     end
   end

@@ -5,6 +5,7 @@ require 'pathname'
 require 'fileutils'
 
 require_relative "directives"
+require_relative "command_executor"
 
 module Bookdown
   class Parser
@@ -16,8 +17,7 @@ module Bookdown
     end
 
     def parse(file)
-      existing_add_to_directive = nil
-      inside_package_json = false
+      existing_multiline_directive = nil
       package_json = ""
 
       input = Pathname(file)
@@ -26,29 +26,10 @@ module Bookdown
         File.open(input) do |input|
           chdir @work_dir do
             input.readlines.each do |line|
-              if line =~ /^!END PACKAGE_JSON *$/
-                existing_package_json = JSON.parse(File.read("package.json"))
-                puts "Inserting into package.json:\n#{package_json}"
-                parsed_additions = JSON.parse(package_json)
-                new_package_json = JSON.pretty_generate(existing_package_json.merge(parsed_additions))
-                File.open("package.json","w") do |package_json_file|
-                  package_json_file.puts(new_package_json)
-                end
-                file.puts "```json"
-                file.puts new_package_json
-                file.puts "```"
-                inside_package_json = false
-                package_json = ""
-              elsif line =~ /^!END ADD_TO *$/
-                file.puts "```"
-                existing_add_to_directive = nil
-              elsif inside_package_json
-                package_json << line
-              elsif existing_add_to_directive
-                queue = existing_add_to_directive.append(line)
-                queue.each do |command|
-                  command.execute(file)
-                end
+              if existing_multiline_directive
+                commands = existing_multiline_directive.append(line)
+                command_executor.execute_all(commands,file)
+                existing_multiline_directive = nil unless existing_multiline_directive.continue?
               elsif line =~ /^!DUMP_CONSOLE (.*)$/
                 html = $1
                 exec_and_print("phantomjs ../src/dump_console.js #{html}",file, show_command: false)
@@ -59,17 +40,18 @@ module Bookdown
                   file.puts "![screenshot](images/#{screenshot})"
                 end
               elsif sh_directive = Bookdown::Directives::Sh.recognize(line)
-                file.puts(sh_directive.execute)
-              elsif line =~/^!PACKAGE_JSON *$/
-                raise "already inside an PACKAGE_JSON" if inside_package_json
-                inside_package_json = true
+                commands = sh_directive.execute
+                command_executor.execute_all(commands,file)
+              elsif package_json_directive = Bookdown::Directives::PackageJson.recognize(line)
+                raise "already inside an PACKAGE_JSON" if existing_multiline_directive
+                existing_multiline_directive = package_json_directive
+                commands = existing_multiline_directive.execute
+                command_executor.execute_all(commands,file)
               elsif add_to_directive = Bookdown::Directives::AddTo.recognize(line)
-                raise "already inside an ADD_TO" if existing_add_to_directive
-                existing_add_to_directive = add_to_directive
-                queue = existing_add_to_directive.execute
-                queue.each do |command|
-                  command.execute(file)
-                end
+                raise "already inside an ADD_TO" if existing_multiline_directive
+                existing_multiline_directive = add_to_directive
+                commands = existing_multiline_directive.execute
+                command_executor.execute_all(commands,file)
               else
                 file.puts line
               end
@@ -78,6 +60,11 @@ module Bookdown
         end
       end
     end
+
+    def command_executor
+      @command_executor ||= Bookdown::CommandExecutor.new
+    end
+
     def language(filename)
       if filename =~ /\.js/
         "javascript"

@@ -1,41 +1,10 @@
 require 'pathname'
+require_relative "commands/method_call"
+require_relative "commands/puts_to_file_io"
+require_relative "commands/append_to_file_name"
 module Bookdown
   module Directives
     class AddTo
-      class Command
-        attr_reader :object, :method, :argument
-        def initialize(object,method,argument)
-          @object = object
-          @method = method
-          @argument = argument
-        end
-
-        def execute(_)
-          @object.send(method,argument)
-        end
-      end
-
-      class PutsToFileIOCommand < Command
-        def initialize(string)
-          super(nil,nil,string)
-        end
-        def execute(file)
-          file.puts(argument)
-        end
-      end
-
-      class AppendToFileNameCommand < Command
-        def initialize(filename,string)
-          super(nil,nil,string)
-          @filename = filename
-        end
-        def execute(_)
-          File.open(@filename,"a") do |file|
-            file.puts(argument)
-          end
-        end
-      end
-
       def self.recognize(line)
         if line =~/^!ADD_TO({.*})? (.*)$/
           filename,options = if $2.nil?
@@ -54,24 +23,34 @@ module Bookdown
       def initialize(filename,options)
         @filename = Pathname(filename)
         @options = options
+        @continue = true
       end
 
       def execute
         queue = []
         if @options.include?("replace")
-          queue << Command.new($stdout, :puts, "Deleting \"#{@filename}\"")
-          queue << Command.new(FileUtils,:rm_rf,@filename)
+          queue << Commands::MethodCall.new($stdout, :puts, "Deleting \"#{@filename}\"")
+          queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
         end
-        queue << Command.new($stdout,:puts,"Creating #{@filename.dirname}")
-        queue << Command.new(FileUtils,:mkdir_p,@filename.dirname)
-        queue << PutsToFileIOCommand.new("```#{language(@filename)}")
+        queue << Commands::MethodCall.new($stdout,:puts,"Creating #{@filename.dirname}")
+        queue << Commands::MethodCall.new(FileUtils,:mkdir_p,@filename.dirname)
+        queue << Commands::PutsToFileIO.new("```#{language(@filename)}")
         queue
+      end
+
+      def continue?
+        @continue
       end
 
       def append(line)
         queue = []
-        queue << AppendToFileNameCommand.new(@filename,line)
-        queue << PutsToFileIOCommand.new(line)
+        if line =~ /^!END ADD_TO *$/
+          @continue = false
+          queue << Commands::PutsToFileIO.new("```")
+        else
+          queue << Commands::AppendToFileName.new(@filename,line)
+          queue << Commands::PutsToFileIO.new(line)
+        end
         queue
       end
 
