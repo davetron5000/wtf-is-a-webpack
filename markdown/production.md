@@ -101,7 +101,7 @@ Now, we can re-run Webpack:
 
 This should work, and our file size should be *way* smaller:
 
-!SH wc -c config/webpack.config.js
+!SH wc -c dist/bundle.js
 
 Nice!  If you open up `dist/index.html`, you should still the app working as before, but with almost a _third_ of
 the filesize.  Feel the bandwidth savings!

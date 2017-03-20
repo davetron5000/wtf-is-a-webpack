@@ -11,14 +11,13 @@ module Bookdown
   class Parser
     include FileUtils
 
-    def initialize
-      @work_dir = Pathname("work")
-      @dist = Pathname("dist")
+    def initialize(work_dir: , dist_dir: )
+      @work_dir = Pathname(work_dir)
+      @dist = Pathname(dist_dir)
     end
 
     def parse(file)
       existing_multiline_directive = nil
-      package_json = ""
 
       input = Pathname(file)
       output = @dist / input.basename
@@ -59,6 +58,7 @@ module Bookdown
           end
         end
       end
+      output
     end
 
     def command_executor
@@ -77,19 +77,19 @@ module Bookdown
 
     def exec_and_print(command,io, show_command: true, show_stdout: true, &block)
       puts "Executing #{command}"
-      io.puts "```"
       stdout,stderr,status = Open3.capture3(command)
       if status.success?
         if block.nil?
+          io.puts "```"
           io.puts "> #{command}" if show_command
           io.puts stdout if show_stdout
+          io.puts "```"
         else
           block.(command,stdout)
         end
       else
         raise status.inspect + "\n" + stdout + "\n" + stderr
       end
-      io.puts "```"
     end
   end
 end
