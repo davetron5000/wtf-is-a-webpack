@@ -78,15 +78,17 @@ Before we configure this, let's see if it actually works.  First, we can look at
 
 !SH wc -c dist/bundle.js
 
-Now, we'll add a new `plugins:` key to `config/webpack.config.js` and create a new `UglifyJSPlugin` as well.  Our
+Now, we'll add a new `plugins:` key to `webpack.config.js` and create a new `UglifyJSPlugin` as well.  Our
 entire configuration should look like so:
 
-!ADD_TO{replace} config/webpack.config.js
+!ADD_TO{replace} webpack.config.js
+const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+
 module.exports = {
   entry: './js/index.js',
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
   plugins: [
@@ -118,12 +120,13 @@ Turns out, there is.  The value you give to `filename:` isn't just a string.  It
 configuration-within-a-configuration that, fortunately, can achieve our goals.  According to the docs, we can use
 the magic string `"[chunkhash]"`.  Let's try it.
 
-!ADD_TO{replace} config/webpack.config.js
+!ADD_TO{replace} webpack.config.js
+const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 module.exports = {
   entry: './js/index.js',
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: '[chunkhash]-bundle.js'
   },
   plugins: [
@@ -171,14 +174,15 @@ Let's place that file in a new directory called `html`.  Note that we've omitted
 
 Now, we'll bring in the new plugin and configure it.  Here's our entire configuration file:
 
-!ADD_TO{replace} config/webpack.config.js
+!ADD_TO{replace} webpack.config.js
+const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlPlugin     = require('html-webpack-plugin');
 
 module.exports = {
   entry: './js/index.js',
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: '[chunkhash]-bundle.js'
   },
   plugins: [
@@ -212,16 +216,17 @@ handle this simple case for us.
 
 If you dig into the documentation for html-webpack-templates, you'll find an [example template](https://github.com/jaketrent/html-webpack-template/blob/86f285d5c790a6c15263f5cc50fd666d51f974fd/index.html) that demonstrates how to make our `index.html` *actually* a template.  You'll also see that there's a configuration option called `inject` that we can set to false to prevent the plugin from automatically inserting `<script>` tag.
 
-Let's set that option in `config/webpack.config.js`:
+Let's set that option in `webpack.config.js`:
 
-!ADD_TO{replace} config/webpack.config.js
+!ADD_TO{replace} webpack.config.js
+const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlPlugin     = require('html-webpack-plugin');
 
 module.exports = {
   entry: './js/index.js',
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: '[chunkhash]-bundle.js'
   },
   plugins: [

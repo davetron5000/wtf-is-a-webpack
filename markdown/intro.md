@@ -204,25 +204,28 @@ In this tiny example, the shim is larger than the code, but in a real applicatio
 We don't want to be building our JavaScript bundle from an ever-increasingly-complex command-line invocation.  We also don't want the generated code being dumped in our root
 directory either, so let's set-up a tiny project structure to keep things organized.
 
-First, create a `config` directory, where our Webpack configuration file will go.
+Make `webpack.config.js` look like so:
 
-!SH mkdir config
+!ADD_TO webpack.config.js
+const path = require('path');
 
-Now, make `config/webpack.config.js` look like so:
-
-!ADD_TO config/webpack.config.js
 module.exports = {
   entry: './js/index.js',
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   }
 };
 !END ADD_TO
 
-This will do what we did before with Webpack, *except* it will place `bundle.js` inside `dist/` instead of the current directory.  We can run it like so:
+This will do what we did before with Webpack, *except* it will place `bundle.js` inside `dist/` instead of the current directory.  We have to specify an absolute path to Webpack, even though we shouldn't have to for our uses.  The `path` module provided by Node exposes the `resolve` function we can use to make Webpack happy.
 
-!SH $(yarn bin)/webpack  --config config/webpack.config.js
+Also, yes, this is in the root directory of our project, which is kindof unfortunate, but it'll make things easier
+for us for the time being, so just get used to it and be glad it's not called `WebpackFile` or something silly.
+
+With this configuration in place, we can run it like so:
+
+!SH $(yarn bin)/webpack
 !SH ls dist
 
 Woot!
@@ -243,7 +246,7 @@ We'll add a `"scripts"` key to `package.json` so the entire thing should now loo
 !PACKAGE_JSON
 {
   "scripts": {
-    "webpack": "$(yarn bin)/webpack --config config/webpack.config.js --display-error-details"
+    "webpack": "$(yarn bin)/webpack --config webpack.config.js --display-error-details"
   }
 }
 !END PACKAGE_JSON

@@ -307,7 +307,7 @@ module.exports = function(config) {
     preprocessors: {
       '**/*.spec.js': [ 'webpack' ]
     },
-    webpack: require('../config/webpack.config.js'),
+    webpack: require('../webpack.config.js'),
     reporters: ['progress'],
     port: 9876,
     colors: true,
