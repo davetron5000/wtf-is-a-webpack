@@ -1,8 +1,8 @@
 require "fileutils"
 require "pathname"
-require "redcarpet"
 
 require_relative "src/lib/bookdown/parser"
+require_relative "src/lib/bookdown/renderer"
 
 include FileUtils
 
@@ -13,28 +13,15 @@ FILES = [
   "production",
 ]
 task :default => [ :dist, :work, :site ] do
+  parser = Bookdown::Parser.new(work_dir: "work", dist_dir: "dist")
+  renderer = Bookdown::Renderer.new
   FILES.map { |file|
     Pathname("markdown/#{file}.md").expand_path
   }.map { |file|
     puts "Processing #{file}"
-    Bookdown::Parser.new(work_dir: "work", dist_dir: "dist").parse(file)
+    parser.parse(file)
   }.each do |file|
-    renderer = Redcarpet::Render::HTML.new(
-      with_toc_data: true
-    )
-    markdown = Redcarpet::Markdown.new(renderer,
-                                       tables: true,
-                                       no_intra_emphasis: true,
-                                       fenced_code_blocks: true,
-                                       autolink: true,
-                                       disable_indented_code_blocks: true,
-                                       strikethrough: true,
-                                       superscript: true,
-                                       highlight: true)
-
-    File.open("site/#{file.basename(file.extname)}.html","w") do |html|
-      html.puts(markdown.render(File.read(file)))
-    end
+    renderer.render(file,"site/#{file.basename(file.extname)}.html")
     cp_r "dist/images", "site"
   end
 end
