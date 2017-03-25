@@ -107,36 +107,36 @@ Let's create our entry point in `js/index.js`:
 
 Now, create `js/index.js` like so:
 
-!ADD_TO js/index.js
+!CREATE_FILE js/index.js
 console.log("Hello from index.js!");
 import address from './address';
 import billing from './billing';
 
 address.announce();
 billing.announce();
-!END ADD_TO
+!END CREATE_FILE
 
 Now, create `js/address.js` like so:
 
-!ADD_TO js/address.js
+!CREATE_FILE js/address.js
 console.log("Hello from address.js");
 export default {
   announce: function() {
     console.log("Announcing address.js");
   }
 }
-!END ADD_TO
+!END CREATE_FILE
 
 And create `js/billing.js` like so
 
-!ADD_TO js/billing.js
+!CREATE_FILE js/billing.js
 console.log("Hello from billing.js");
 export default {
   announce: function() {
     console.log("Announcing billing.js");
   }
 }
-!END ADD_TO
+!END CREATE_FILE
 
 <aside class="sidebar">
 # What the heck are `import` and `export default`
@@ -173,7 +173,7 @@ We can do this without configuration per se, and just use CLI options:
 
 Now, let's load this in a browser.  Create `index.html` like so:
 
-!ADD_TO index.html
+!CREATE_FILE index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -181,7 +181,7 @@ Now, let's load this in a browser.  Create `index.html` like so:
   </head>
   <h1>Open the Web Inspector</h1>
 </html>
-!END ADD_TO
+!END CREATE_FILE
 
 Open this in a browser, then open the JavaScript console.  You should see all our messages:
 
@@ -206,7 +206,7 @@ directory either, so let's set-up a tiny project structure to keep things organi
 
 Make `webpack.config.js` look like so:
 
-!ADD_TO webpack.config.js
+!CREATE_FILE webpack.config.js
 const path = require('path');
 
 module.exports = {
@@ -216,7 +216,7 @@ module.exports = {
     filename: 'bundle.js'
   }
 };
-!END ADD_TO
+!END CREATE_FILE
 
 This will do what we did before with Webpack, *except* it will place `bundle.js` inside `dist/` instead of the current directory.  We have to specify an absolute path to Webpack, even though we shouldn't have to for our uses.  The `path` module provided by Node exposes the `resolve` function we can use to make Webpack happy.
 

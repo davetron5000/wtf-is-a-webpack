@@ -46,7 +46,7 @@ module Bookdown
                 existing_multiline_directive = package_json_directive
                 commands = existing_multiline_directive.execute
                 command_executor.execute_all(commands,file)
-              elsif add_to_directive = Bookdown::Directives::AddTo.recognize(line)
+              elsif add_to_directive = Bookdown::Directives::CreateFile.recognize(line)
                 raise "already inside an ADD_TO" if existing_multiline_directive
                 existing_multiline_directive = add_to_directive
                 commands = existing_multiline_directive.execute

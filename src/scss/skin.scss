@@ -1,0 +1,19 @@
+body {
+  background: $paper;
+  color: $ink;
+}
+pre {
+  background: $ink;
+  color: $paper;
+  border: solid thin;
+  border-radius: $sz3;
+}
+
+img {
+  background: white;
+  padding: $sz4;
+  border-radius: $sz4;
+  -webkit-box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
+     -moz-box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
+          box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
+}

@@ -32,7 +32,7 @@ This will also download the markdown package.
 
 Let's create our HTML first by replacing `dist/index.html` with the following:
 
-!ADD_TO{replace} dist/index.html
+!CREATE_FILE dist/index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -50,12 +50,12 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
     </section>
   </body>
 </html>
-!END ADD_TO
+!END CREATE_FILE
 
 The way our amazing markdown app will work is that we'll create a function that, given some ids, can attach itself to a form to render a preview.  We'll assume that function
 creates an event listener we can give to our form.  So, in `index.js`, let's write:
 
-!ADD_TO{replace} js/index.js
+!CREATE_FILE js/index.js
 import markdownPreviewer from "./markdownPreviewer";
 
 window.onload = function() {
@@ -65,14 +65,14 @@ window.onload = function() {
                                         "source",    // id of source textarea
                                         "preview")); // id of preview DOM element
 };
-!END ADD_TO
+!END CREATE_FILE
 
 The function `attachPreviewer` accepts three arguments: the document (so as not to depend on global state), the ID of a textarea that has our Markdown source, and the id of
 another area of the page where we can render the preview.
 
 Now, let's create `js/markdownPreviewer.js`, which does all the work.
 
-!ADD_TO js/markdownPreviewer.js
+!CREATE_FILE js/markdownPreviewer.js
 import { markdown } from "markdown";
 
 var attachPreviewer = function($document,sourceId,previewId) {
@@ -88,7 +88,7 @@ var attachPreviewer = function($document,sourceId,previewId) {
 export default {
   attachPreviewer: attachPreviewer
 }
-!END ADD_TO
+!END CREATE_FILE
 
 First, let's call attention to that first `import` call.  It doesn't look like the others, because of those braces.  What is exported from the markdown library has this
 structure:

@@ -1,0 +1,136 @@
+$system-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+$header-font: $system-font-stack;//"Baskerville", "Georgia", "Times", serif;
+$body-font: $system-font-stack;
+$serif-font: "Georgia", "Times", serif;
+$code-font: courier, monospace;
+
+// Sizing
+$chars-per-line: 80;
+
+// Modular Font Scale
+/*
+$f-2:  123.364px;
+$f-1:  104.717px;
+*/
+$f1:  76.245px;
+$f2:  64.720px;
+$f3:  47.123px;
+$f4:  40.000px;
+$f5:  29.124px;
+$f6:  24.722px;
+$f7:  18.000px;
+$f8:  15.279px;
+$f9:  11.125px;
+$f10:   9.443px;
+$body-font-size: $f7;
+/*
+$f10: 6.876px;
+$f11: 5.836px;
+$f12: 4.250px;
+*/
+
+$line-height: 1.4;
+$text-width: $body-font-size * $chars-per-line / 2;
+
+// Some sizes
+$sz1: $body-font-size * $line-height * 2;
+$sz2: $body-font-size * $line-height;
+$sz3: $body-font-size * $line-height / 2;
+$sz4: $body-font-size * $line-height / 4;
+$sz5: $body-font-size * $line-height / 8;
+
+b, strong {
+  font-weight: 600;
+}
+
+h1 { font-size: $f2; }
+h2 { font-size: $f3; }
+h3 { font-size: $f5; }
+h4 { font-size: $f7; }
+h5 { font-size: $f8; }
+h6 { font-size: $f9; }
+
+.chapter {
+  h1 { font-size: $f3; font-weight: 100; text-transform: uppercase; letter-spacing: $sz4; text-align: center; }
+  h2 { font-size: $f4; font-weight: 200; margin-left: -$sz1; }
+  h3 { font-size: $f5; }
+  h4 { font-size: $f7; }
+  h5 { font-size: $f8; }
+  h6 { font-size: $f9; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  text-rendering: optimizeLegibility;
+  font-family: $header-font;
+}
+h1, h2, h3 {
+  margin-bottom: $sz3;
+}
+
+h4, h5, h6 {
+  margin-bottom: -1 * $sz3;
+}
+
+body, p, li, td {
+  font-family: $body-font;
+  font-size: $body-font-size;
+  line-height: $line-height;
+  font-weight: 200;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  width: $text-width;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+pre, code {
+  font-family: $code-font;
+}
+pre code {
+  padding: 0;
+  font-size: $f7;
+  overflow-x: scroll;
+}
+
+p code, li code {
+  font-size: $f7;
+  white-space: nowrap;
+  color: lighten($ink,35%);
+}
+
+pre {
+  padding: $sz2;
+  margin: 0;
+  overflow-x: scroll;
+}
+
+img {
+  max-width: 100%;
+  padding: $sz3;
+}
+
+blockquote {
+  padding: $sz3;
+  border-radius: $sz5;
+  background: #eee;
+  margin: 0;
+  p {
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: $sz1;
+    margin-right: $sz2;
+    font-size: $f7;
+    font-family: $serif-font;
+    font-weight: normal;
+    font-style: italic;
+  }
+}
+
+a {
+  font-weight: normal;
+  color: #0074D9;
+}

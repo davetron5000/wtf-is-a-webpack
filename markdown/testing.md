@@ -33,13 +33,13 @@ OK, now we have tests?
 
 Not quite.  Let's create a simple no-op spec in `spec/canary.spec.js`:
 
-!ADD_TO spec/canary.spec.js
+!CREATE_FILE spec/canary.spec.js
 describe("canary", function() {
   it("can run a test", function() {
     expect(true).toBe(true);
   });
 });
-!END ADD_TO
+!END CREATE_FILE
 
 And now we have a test:
 
@@ -126,7 +126,7 @@ var document = {
 This leaves us with how to access `attachPreviewer`.  We'll use an import, resulting in this entire file for our
 test:
 
-!ADD_TO spec/markdownPreview.spec.js
+!CREATE_FILE spec/markdownPreview.spec.js
 import markdownPreviewer from "../js/markdownPreviewer"
 
 var event = {
@@ -167,7 +167,7 @@ describe("markdownPreviewer", function() {
     });
   });
 });
-!END ADD_TO
+!END CREATE_FILE
 
 Of course, this doesn't work, because Jasmine has no idea what to do with that `import`:
 
@@ -222,48 +222,42 @@ It's OK to chuckle at their proclaimation that we don't need loads of configurat
 
 It's common to use `karma init` to create a config file to start off with but this a) requires interactive input
 and b) places the file in the current directory.  We don't want either of those, so create `spec/karma.conf.js`
-like so:
+yourself.  The bare minimum information you have to provide is:
 
-!ADD_TO spec/karma.conf.js
+* What testing frameworks are being used (Jasmine, in our case)
+* Where the actual test files are (`spec/` in our case)
+* What browsers we want to run the code in. (See below for why we have to care about browsers)
+
+The mimimal configuration would be :
+
+!CREATE_FILE spec/karma.conf.js
 module.exports = function(config) {
   config.set({
-    basePath: '',
     frameworks: ['jasmine'],
     files: [
       '**/*.spec.js'
     ],
-    exclude: [
-    ],
-    preprocessors: {
-    },
-    reporters: ['progress'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['PhantomJS'],
-    singleRun: true,
-    concurrency: Infinity
+    browsers: ['PhantomJS']
   })
 }
-!END ADD_TO
+!END CREATE_FILE
 
-The configuration is an exported function that's given an object that we set some values on.  These keys are [all
-documented](https://karma-runner.github.io/1.0/config/configuration-file.html) if you want to know what they do,
-but basically we are telling Karma:
+Note that the location of our test files is relative to wherever the config file is.  Since we put it in `spec/`,
+`**/*.spec.js` means "all the files in `spec/` that end in `.spec.js`.
 
-* Where are test files are (`**/*.spec.js`, noting that this is relative to where the config file is.)
-* What testing framework we are using (`jasmine`)
-* What browsers to run our code under (`PhantomJS`)
+But I'm burying the lead.  We had to do something with browsers.  I know and I'm really sorry, but this is how it
+has to be.
 
-"Wait, browsers?  PhantomJS?".  Sorry about that.  Karma is for testing front-end code, which is what we are
-writing, and that code should be tested in a browser.  PhantomJS is a browser that runs headlessly, meaning it's
-the only way to run our tests, with Karma, on the command line.
+Our code will ultimately run in a browser, and as nice as it would be to just execute it quickly using Node, as
+professional developers, we need to test our code how it will be executed.  That's in a brwoser.
 
-This seems like it sucks, and it does in many ways, however it *is* a good idea to test our code in the runtime
-it'll be used in, and that's a browser.
+PhantomJS is a browser that runs headlessly, meaning it's the only way to run our tests, with Karma, on the command line.
 
-You'll need to install [PhantomJS][phantomjs] if you haven't.
+I know this sucks, and you should brace yourself for a terrible testing experience, but let's just give thanks that
+it's possible and that we don't have to pop up Firefox and deal with all that.
+
+So…you'll need to install [PhantomJS][phantomjs] if you haven't.  When you do that, you can test your intall
+thusly:
 
 !SH phantomjs --version
 
@@ -280,11 +274,14 @@ With that done, we can now run our tests:
 The `--single-run` means "actually run the tests and report the results".  Without it, Karma sits there waiting for
 you to navigate to a web server it starts up that then runs the tests.
 
-You'll notice it failed withi the same error as before.  Not to fear…we can fix this.  You'll notice that
-configuration key, `preprocessors`.  This allows us to process our code before sending it to Karma to execute.
-This sounds like what we want.
+You'll notice it failed withi the same error as before.  Not to fear…we can fix this, and this is now where we pick
+up where we left off way at the start of this section.  We need to have our tests use Webpack to bundle up our
+JavaScript so we can access it and run tests against it.
 
-There is such a thing called `karma-webpack` that we can install and configure.  First, we'll add it:
+Karma's configuration file has an option called `preprocessors` that allows us to do stuff to our code before it
+runs the tests.
+
+There is such a preprocess called `karma-webpack` that we can install and configure.  First, we'll add it:
 
 !SH yarn add -D karma-webpack
 
@@ -293,38 +290,28 @@ Now, we'll add it as a preprocessor and use `require` to bring in our existing W
 
 !SH rm spec/karma.conf.js
 
-!ADD_TO spec/karma.conf.js
+!CREATE_FILE spec/karma.conf.js
 module.exports = function(config) {
   config.set({
-
-    basePath: '',
     frameworks: ['jasmine'],
     files: [
       '**/*.spec.js'
-    ],
-    exclude: [
     ],
     preprocessors: {
       '**/*.spec.js': [ 'webpack' ]
     },
     webpack: require('../webpack.config.js'),
-    reporters: ['progress'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['PhantomJS'],
-    singleRun: false,
-    concurrency: Infinity
+    browsers: ['PhantomJS']
   })
 }
-!END ADD_TO
+!END CREATE_FILE
 
 And wouldn't you know it, it works!
 
 !SH $(yarn bin)/karma start spec/karma.conf.js  --single-run
 
-To be honest, I'm fairly amazed that this actually worked, but we can now run unit tests, which is great.
+To be honest, I'm fairly amazed that this actually worked with the small amount of configuration we've provided.
+Take that Medium think pieces!
 
 The main thing to note here is the `webpack:` key in our Karma configuration file.  Our use of `require` is
 essentially the same as if we copy and pasted our Webpack configuration into our Karma configuration.  Re-using

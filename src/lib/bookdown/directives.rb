@@ -1,5 +1,5 @@
 require_relative "directives/package_json"
-require_relative "directives/add_to"
+require_relative "directives/create_file"
 require_relative "directives/js_console"
 require_relative "directives/screenshot"
 require_relative "directives/sh"

@@ -21,7 +21,10 @@ task :default => [ :dist, :work, :site ] do
     puts "Processing #{file}"
     parser.parse(file)
   }.each do |file|
-    renderer.render(file,"site/#{file.basename(file.extname)}.html")
+    renderer.render(file,"src/html/chapter.html","site/#{file.basename(file.extname)}.html")
+    sh "sass --update src/scss/styles.scss:site/styles.css" do |ok,res|
+      raise res.inspect unless ok
+    end
     cp_r "dist/images", "site"
   end
 end

@@ -81,7 +81,7 @@ Before we configure this, let's see if it actually works.  First, we can look at
 Now, we'll add a new `plugins:` key to `webpack.config.js` and create a new `UglifyJSPlugin` as well.  Our
 entire configuration should look like so:
 
-!ADD_TO{replace} webpack.config.js
+!CREATE_FILE webpack.config.js
 const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
@@ -95,7 +95,7 @@ module.exports = {
     new UglifyJSPlugin()
   ]
 };
-!END ADD_TO
+!END CREATE_FILE
 
 Now, we can re-run Webpack:
 
@@ -120,7 +120,7 @@ Turns out, there is.  The value you give to `filename:` isn't just a string.  It
 configuration-within-a-configuration that, fortunately, can achieve our goals.  According to the docs, we can use
 the magic string `"[chunkhash]"`.  Let's try it.
 
-!ADD_TO{replace} webpack.config.js
+!CREATE_FILE webpack.config.js
 const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 module.exports = {
@@ -133,7 +133,7 @@ module.exports = {
     new UglifyJSPlugin()
   ]
 };
-!END ADD_TO
+!END CREATE_FILE
 
 Sure enough, this works:
 
@@ -153,7 +153,7 @@ place.
 
 Let's place that file in a new directory called `html`.  Note that we've omitted the `<script>` tag we had before.
 
-!ADD_TO{replace} html/index.html
+!CREATE_FILE html/index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -170,11 +170,11 @@ Let's place that file in a new directory called `html`.  Note that we've omitted
     </section>
   </body>
 </html>
-!END ADD_TO
+!END CREATE_FILE
 
 Now, we'll bring in the new plugin and configure it.  Here's our entire configuration file:
 
-!ADD_TO{replace} webpack.config.js
+!CREATE_FILE webpack.config.js
 const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlPlugin     = require('html-webpack-plugin');
@@ -192,7 +192,7 @@ module.exports = {
     }),
   ]
 };
-!END ADD_TO
+!END CREATE_FILE
 
 Now, when we `yarn run webpack`, our HTML file should be generated for us:
 
@@ -218,7 +218,7 @@ If you dig into the documentation for html-webpack-templates, you'll find an [ex
 
 Let's set that option in `webpack.config.js`:
 
-!ADD_TO{replace} webpack.config.js
+!CREATE_FILE webpack.config.js
 const path           = require('path');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlPlugin     = require('html-webpack-plugin');
@@ -237,13 +237,13 @@ module.exports = {
     }),
   ]
 };
-!END ADD_TO
+!END CREATE_FILE
 
 We can now use [EJS](http://www.embeddedjs.com) in our `html/index.html` to pull out the file.  It's a bit weird
 because Webpack supports mulitple output files (which it called _chunks_) so we have to iterate over those, even
 though in our case it's just one file.
 
-!ADD_TO{replace} html/index.html
+!CREATE_FILE html/index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -263,7 +263,7 @@ though in our case it's just one file.
     <% } %>
   </body>
 </html>
-!END ADD_TO
+!END CREATE_FILE
 
 When we run `yarn run webpack`, it all works and you can see that it properly uses our CDN to serve the file.
 

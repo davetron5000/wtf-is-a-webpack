@@ -4,9 +4,9 @@ require_relative "commands/puts_to_file_io"
 require_relative "commands/append_to_file_name"
 module Bookdown
   module Directives
-    class AddTo
+    class CreateFile
       def self.recognize(line)
-        if line =~/^!ADD_TO({.*})? (.*)$/
+        if line =~/^!CREATE_FILE({.*})? (.*)$/
           filename,options = if $2.nil?
                                     [$1,[]]
                                   else
@@ -28,10 +28,8 @@ module Bookdown
 
       def execute
         queue = []
-        if @options.include?("replace")
-          queue << Commands::MethodCall.new($stdout, :puts, "Deleting \"#{@filename}\"")
-          queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
-        end
+        queue << Commands::MethodCall.new($stdout, :puts, "Deleting \"#{@filename}\"")
+        queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
         queue << Commands::MethodCall.new($stdout,:puts,"Creating #{@filename.dirname}")
         queue << Commands::MethodCall.new(FileUtils,:mkdir_p,@filename.dirname)
         queue << Commands::PutsToFileIO.new("```#{language(@filename)}")
@@ -44,7 +42,7 @@ module Bookdown
 
       def append(line)
         queue = []
-        if line =~ /^!END ADD_TO *$/
+        if line =~ /^!END CREATE_FILE *$/
           @continue = false
           queue << Commands::PutsToFileIO.new("```")
         else

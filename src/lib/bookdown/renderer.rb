@@ -1,4 +1,6 @@
 require "redcarpet"
+require "erb"
+
 module Bookdown
   class Renderer
     def initialize
@@ -13,9 +15,11 @@ module Bookdown
                                           highlight: true)
     end
 
-    def render(markdown_filename,output_filename)
+    def render(markdown_filename,template,output_filename)
+      erb_renderer = ERB.new(File.read(template))
       File.open(output_filename,"w") do |file|
-        file.puts(@markdown.render(File.read(markdown_filename)))
+        html = @markdown.render(File.read(markdown_filename))
+        file.puts(erb_renderer.result(binding))
       end
     end
   end
