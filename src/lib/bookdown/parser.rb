@@ -78,6 +78,8 @@ module Bookdown
     def exec_and_print(command,io, show_command: true, show_stdout: true, &block)
       puts "Executing #{command}"
       stdout,stderr,status = Open3.capture3(command)
+      puts stdout
+      puts stderr
       if status.success?
         if block.nil?
           io.puts "```"

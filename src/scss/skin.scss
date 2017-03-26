@@ -5,15 +5,56 @@ body {
 pre {
   background: $ink;
   color: $paper;
-  border: solid thin;
-  border-radius: $sz3;
+  border-radius: $sz4;
 }
 
 img {
   background: white;
-  padding: $sz4;
-  border-radius: $sz4;
-  -webkit-box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
-     -moz-box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
-          box-shadow: $sz5 $sz5 $sz3 0px rgba(0,0,0,0.75);
+  -webkit-box-shadow: $sz5/4 $sz5/4 $sz4 0px rgba(0,0,0,0.75);
+     -moz-box-shadow: $sz5/4 $sz5/4 $sz4 0px rgba(0,0,0,0.75);
+          box-shadow: $sz5/4 $sz5/4 $sz4 0px rgba(0,0,0,0.75);
+}
+
+.chapter {
+  &::after {
+    content: "§";
+    display: block;
+    text-align: center;
+  }
+  a {
+    font-weight: 600;
+    text-decoration: none;
+    &::before {
+      content: " ☞";
+    }
+  }
+  h1 {
+    &::after {
+      display: block;
+      content: "❧";
+    }
+  }
+  aside.sidebar {
+    background: darken($paper-grey,10%);
+    color: lighten($ink-light,5%);
+    @media screen and (min-width: 30em) {
+      border-radius: $sz1 $sz1 $sz3 $sz3;
+    }
+    h1 {
+      @media screen and (min-width: 30em) {
+        border-radius: $sz3 $sz3 0 0;
+      }
+      background: $ink;
+      color: $paper;
+      &::after {
+        display: none;
+      }
+    }
+    &::after {
+      text-align: right;
+      display: block;
+      content: "⁂";
+      color: lighten($ink-light,15%);
+    }
+  }
 }

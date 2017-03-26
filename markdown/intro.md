@@ -139,30 +139,32 @@ export default {
 !END CREATE_FILE
 
 <aside class="sidebar">
-# What the heck are `import` and `export default`
-
+<h1>What the heck are <code>import</code> and <code>export default<code>?</h1>
+<p>
 The whole reason we are using Webpack is because JavaScript has no way to compose source files or package code in any useful way.  A consequence of this is that there is
 also no syntax or library to compose code or package files.  Node invented a way to do this now called CommonJS (though Node's is slightly different).  There is also one
 called Asynchronous Module Definition or AMD or RequireJS.  So, that's three ways to do it, none standard.
-
-ES6 (or ES2015?) introduced a standard way of bringing in modules.  This is what we're using here, but of course it doesn't work in a browser which is why Webpack exists. Webpack translates our use of `import` and `export` so that things work in a browser.
-
-So, in this code in `file.js`:
-
-```javascript
+</p>
+<p>
+ES6 (or ES2015?) introduced a standard way of bringing in modules.  This is what we're using here, but of course it doesn't work in a browser which is why Webpack exists. Webpack translates our use of <code>import</code> and <code>export</code> so that things work in a browser.
+</p>
+<p>
+So, in this code in <code>file.js</code>:
+</p>
+<pre><code class="javascript">
 export default {
   foo: function() {},
   bar: 42
 }
-```
-
-We are exporting `foo` and `bar`, which can be imported like so:
-
-```javascript
+</code></pre>
+<p>
+We are exporting <code>foo</code> and <code>bar</code>, which can be imported like so:
+</p>
+<pre><code class="javascript">
 import my_lib from './file'
 my_lib.foo(); // calls the function foo above
 my_lib.bar;   // 42
-```
+</code></pre>
 </aside>
 
 What we want is to produce a singe file called `bundle.js` that uses all this code.
@@ -190,15 +192,16 @@ Open this in a browser, then open the JavaScript console.  You should see all ou
 Ok then!  That was neat!
 
 <aside class="sidebar">
-# What's in `bundle.js` anyway?
-
+<h1>What's in <code>bundle.js</code> anyway?</h1>
+<p>
 Beware.  Here be dragons!
-
-As mentioned, Webpack makes `import` and `export` work.  It does this by creating a somewhat small JavaScript-based implementation of them, and translates the code in our
-various `.js` files such that it uses this _shim_.  If you look at `bundle js` you can see it.  It's nasty—as all generated code is—but you can see your code somewhere near
-the bottom.
-
+</p>
+<p>
+As mentioned, Webpack makes <code>import</code> and <code>export</code> work.  It does this by creating a somewhat small JavaScript-based implementation of them, and translates the code in our various <code>.js</code> files such that it uses this _shim_.  If you look at <code>bundle js</code> you can see it.  It's nasty—as all generated code is—but you can see your code somewhere near the bottom.
+</p>
+<p>
 In this tiny example, the shim is larger than the code, but in a real application, this shim won't add much overhead to what you are making the user download.
+</p>
 </aside>
 
 We don't want to be building our JavaScript bundle from an ever-increasingly-complex command-line invocation.  We also don't want the generated code being dumped in our root

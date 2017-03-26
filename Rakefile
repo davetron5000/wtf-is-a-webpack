@@ -25,7 +25,7 @@ task :default => [ :dist, :work, :site ] do
     sh "sass --update src/scss/styles.scss:site/styles.css" do |ok,res|
       raise res.inspect unless ok
     end
-    cp_r "dist/images", "site"
+    cp_r "work/dist/images", "site"
   end
 end
 

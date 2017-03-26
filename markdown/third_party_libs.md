@@ -144,7 +144,7 @@ If we open up `dist/index.html`, we should see our UI:
 
 And, if you type in some markdown and hit the submit button, voila it's rendered inline by our markdown library:
 
-!SCREENSHOT dist/index.html markdown_screen.png
+!SCREENSHOT dist/index.html markdown_screen2.png
 
 Who would've thought it takes 1,000 words to talk about using third party libraries, but this is JavaScript and we
 should be thankful Webpack exists to make up for the language's deficiencies.

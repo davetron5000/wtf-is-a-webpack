@@ -1,11 +1,9 @@
 $system-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-$header-font: $system-font-stack;//"Baskerville", "Georgia", "Times", serif;
-$body-font: $system-font-stack;
-$serif-font: "Georgia", "Times", serif;
-$code-font: courier, monospace;
+
+        $system-monospace: courier, monospace;
 
 // Sizing
-$chars-per-line: 80;
+$chars-per-line: 70;
 
 // Modular Font Scale
 /*
@@ -21,13 +19,12 @@ $f6:  24.722px;
 $f7:  18.000px;
 $f8:  15.279px;
 $f9:  11.125px;
-$f10:   9.443px;
+$f10: 9.443px;
+$f11: 6.876px;
+$f12: 5.836px;
+$f13: 4.250px;
+
 $body-font-size: $f7;
-/*
-$f10: 6.876px;
-$f11: 5.836px;
-$f12: 4.250px;
-*/
 
 $line-height: 1.4;
 $text-width: $body-font-size * $chars-per-line / 2;
@@ -39,98 +36,114 @@ $sz3: $body-font-size * $line-height / 2;
 $sz4: $body-font-size * $line-height / 4;
 $sz5: $body-font-size * $line-height / 8;
 
-b, strong {
-  font-weight: 600;
-}
-
-h1 { font-size: $f2; }
-h2 { font-size: $f3; }
-h3 { font-size: $f5; }
-h4 { font-size: $f7; }
-h5 { font-size: $f8; }
-h6 { font-size: $f9; }
-
-.chapter {
-  h1 { font-size: $f3; font-weight: 100; text-transform: uppercase; letter-spacing: $sz4; text-align: center; }
-  h2 { font-size: $f4; font-weight: 200; margin-left: -$sz1; }
-  h3 { font-size: $f5; }
-  h4 { font-size: $f7; }
-  h5 { font-size: $f8; }
-  h6 { font-size: $f9; }
-}
-
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  text-rendering: optimizeLegibility;
-  font-family: $header-font;
-}
-h1, h2, h3 {
-  margin-bottom: $sz3;
-}
-
-h4, h5, h6 {
-  margin-bottom: -1 * $sz3;
-}
-
-body, p, li, td {
-  font-family: $body-font;
-  font-size: $body-font-size;
+@mixin header-font {
+  font-family: avenir next,avenir,sans-serif;
   line-height: $line-height;
+}
+@mixin body-font {
+  font-size: $body-font-size;
+  font-family: "Baskerville", "Georgia", "Times", serif;
   font-weight: 200;
-  text-rendering: optimizeLegibility;
+  line-height: $line-height;
+}
+
+@mixin code-font {
+  font-family: courier, monospace;
 }
 
 body {
-  width: $text-width;
-  margin: 0 auto;
-  overflow-x: hidden;
-}
-
-pre, code {
-  font-family: $code-font;
-}
-pre code {
+  @include body-font;
   padding: 0;
-  font-size: $f7;
-  overflow-x: scroll;
+  margin: 0;
 }
 
-p code, li code {
-  font-size: $f7;
-  white-space: nowrap;
-  color: lighten($ink,35%);
+.chapter aside.sidebar {
+  margin-left: -$sz2;
+  margin-right: -$sz2;
+  padding: $sz2;
+  padding-top: 0;
+  p {
+    font-family: avenir next,avenir,sans-serif;
+    font-weight: 300;
+    text-align: justify;
+    text-indent: $sz2;
+  }
+  h1, h2, h3 {
+    font-family: "Baskerville", "Georgia", "Times", serif;
+  }
+  h1 {
+    font-size: $f5;
+    text-align: left;
+    text-transform: none;
+    font-weight: 500;
+    margin-left: -$sz2;
+    margin-right: -$sz2;
+    padding-left: $sz2;
+    padding-right: $sz2;
+  }
+}
+
+article {
+  &.chapter {
+    padding-left: $sz2;
+    padding-right: $sz2;
+    @media screen and (min-width: 30em) {
+      margin-left: auto;
+      margin-right: auto;
+      width: $text-width;
+    }
+  }
+}
+
+li {
+  @include body-font;
+}
+
+p {
+  @include body-font;
+}
+
+td {
+  @include body-font;
+}
+
+th {
+  @include body-font;
 }
 
 pre {
-  padding: $sz2;
-  margin: 0;
-  overflow-x: scroll;
+  @include code-font;
+  font-size: $f8;
+  padding: $sz4;
+}
+
+code {
+  @include code-font;
+}
+
+.chapter {
+  h1 {
+    @include header-font;
+    margin-top: 0;
+    font-size: $f4;
+    font-weight: 100;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  h2 {
+    @include header-font;
+    margin-top: $sz1;
+    font-size: $f5;
+    font-weight: 400;
+    letter-spacing: -($sz5 / 2);
+  }
+  h3 {
+    @include header-font;
+    font-size: $f6;
+    font-weight: 100;
+  }
 }
 
 img {
   max-width: 100%;
-  padding: $sz3;
-}
-
-blockquote {
-  padding: $sz3;
-  border-radius: $sz5;
-  background: #eee;
-  margin: 0;
-  p {
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    margin-left: $sz1;
-    margin-right: $sz2;
-    font-size: $f7;
-    font-family: $serif-font;
-    font-weight: normal;
-    font-style: italic;
-  }
-}
-
-a {
-  font-weight: normal;
-  color: #0074D9;
 }
