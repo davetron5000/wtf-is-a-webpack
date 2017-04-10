@@ -1,4 +1,5 @@
-require 'stringio'
+require_relative "commands/sh"
+
 module Bookdown
   module Directives
     class Sh
@@ -20,29 +21,8 @@ module Bookdown
         @options = options
       end
 
-      def execute(&block)
-        io = StringIO.new
-        puts "Executing #{@command}"
-        io.puts "```"
-        stdout,stderr,status = Open3.capture3(@command)
-        good = if @options.include?("nonzero")
-                     !status.success?
-                   else
-                     status.success?
-                   end
-        if good
-          if block.nil?
-            io.puts "> #{@command}"
-            io.puts stdout
-            io.puts stderr
-          else
-            block.(@command,stdout,io)
-          end
-        else
-          raise status.inspect + "\n" + stdout + "\n" + stderr
-        end
-        io.puts "```"
-        [Commands::PutsToFileIO.new(io.string)]
+      def execute
+        [ Commands::Sh.new(command: @command, expecting_success: !@options.include?("nonzero")) ]
       end
     end
   end

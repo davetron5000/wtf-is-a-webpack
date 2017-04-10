@@ -1,5 +1,3 @@
-# Going to Production
-
 We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a
 language that has given zero thought to any of that!  Webpack isn't so bad and it's working for us.
 

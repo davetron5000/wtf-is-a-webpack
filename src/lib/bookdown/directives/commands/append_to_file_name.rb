@@ -4,7 +4,7 @@ class Bookdown::Directives::Commands::AppendToFileName < Bookdown::Directives::C
     @filename = filename
     @string = string
   end
-  def execute(_current_output_io)
+  def execute(_current_output_io,_logger)
     File.open(@filename,"a") do |file|
       file.puts(@string)
     end

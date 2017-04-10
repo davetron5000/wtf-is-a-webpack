@@ -57,6 +57,49 @@ body {
   margin: 0;
 }
 
+body header {
+  margin-top: 0;
+  padding-top: $sz3;
+  text-align: center;
+  h1 {
+    @include header-font;
+    font-size: $f3;
+    line-height: 0.9;
+    padding-top: $sz3;
+    padding-bottom: $sz2;
+    margin-bottom: $sz2;
+    margin-top: 0;
+  }
+  h2 {
+    @include header-font;
+    font-size: $f6;
+    margin-top: -$sz1;
+    padding-top: 0;
+    margin-bottom: 0;
+    font-weight: 200;
+  }
+  h3 {
+    @include header-font;
+    font-size: $f8;
+    font-weight: normal;
+    margin-top: $sz3;
+    margin-bottom: 0;
+  }
+  h4 {
+    @include header-font;
+    font-size: $f8;
+    font-weight: 200;
+    font-style: italic;
+    margin-top: 0;
+    @media screen and (min-width: 30em) {
+      text-align: right;
+      margin-right: $sz1;
+      padding-bottom: $sz3;
+    }
+  }
+
+}
+
 .chapter aside.sidebar {
   margin-left: -$sz2;
   margin-right: -$sz2;
@@ -146,4 +189,44 @@ code {
 
 img {
   max-width: 100%;
+}
+
+body footer {
+  padding-top: $sz2;
+  padding-bottom: $sz2;
+  margin-top: $sz2;
+  nav {
+    @media screen and (min-width: 30em) {
+      margin-left: auto;
+      margin-right: auto;
+      width: $text-width;
+    }
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    li {
+      a {
+        text-decoration: none;
+        font-weight: bold;
+        font-size: $f7;
+      }
+      &.previous {
+        text-align: left;
+        padding-left: $sz2;
+        @media screen and (min-width: 30em) {
+          padding-left: 0;
+        }
+      }
+      &.next {
+        text-align: right;
+        padding-right: $sz2;
+        padding-bottom: $sz3;
+        @media screen and (min-width: 30em) {
+          padding-right: 0;
+        }
+      }
+    }
+  }
 }

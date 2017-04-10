@@ -8,7 +8,11 @@ class Bookdown::Directives::Commands::MethodCall < Bookdown::Directives::Command
     @argument = argument
   end
 
-  def execute(_current_output_io)
-    @object.send(method,argument)
+  def execute(_current_output_io,logger)
+    if @object == $stdout && method == :puts
+      logger.info(@argument)
+    else
+      @object.send(method,argument)
+    end
   end
 end

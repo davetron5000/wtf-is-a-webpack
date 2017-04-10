@@ -15,10 +15,14 @@ module Bookdown
                                           highlight: true)
     end
 
-    def render(markdown_filename,template,output_filename)
+    def render(chapter:,
+               template:,
+               parsed_markdown_file:,
+               html_file:)
+      show_full_header = chapter.previous_chapter.nil?
       erb_renderer = ERB.new(File.read(template))
-      File.open(output_filename,"w") do |file|
-        html = @markdown.render(File.read(markdown_filename))
+      File.open(html_file,"w") do |file|
+        html = @markdown.render(File.read(parsed_markdown_file))
         file.puts(erb_renderer.result(binding))
       end
     end

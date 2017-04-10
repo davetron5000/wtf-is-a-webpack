@@ -1,5 +1,3 @@
-# WTF is a Webpack?
-
 Webpack is becoming the standard in bundling JavaScript, but what does that even mean and how does it work?  Let's
 find out.
 
@@ -139,7 +137,7 @@ export default {
 !END CREATE_FILE
 
 <aside class="sidebar">
-<h1>What the heck are <code>import</code> and <code>export default<code>?</h1>
+<h1>What the heck are <code>import</code> and <code>export default</code>?</h1>
 <p>
 The whole reason we are using Webpack is because JavaScript has no way to compose source files or package code in any useful way.  A consequence of this is that there is
 also no syntax or library to compose code or package files.  Node invented a way to do this now called CommonJS (though Node's is slightly different).  There is also one
@@ -197,7 +195,7 @@ Ok then!  That was neat!
 Beware.  Here be dragons!
 </p>
 <p>
-As mentioned, Webpack makes <code>import</code> and <code>export</code> work.  It does this by creating a somewhat small JavaScript-based implementation of them, and translates the code in our various <code>.js</code> files such that it uses this _shim_.  If you look at <code>bundle js</code> you can see it.  It's nasty—as all generated code is—but you can see your code somewhere near the bottom.
+As mentioned, Webpack makes <code>import</code> and <code>export</code> work.  It does this by creating a somewhat small JavaScript-based implementation of them, and translates the code in our various <code>.js</code> files such that it uses this <em>shim</em>.  If you look at <code>bundle.js</code> you can see it.  It's nasty—as all generated code is—but you can see your code somewhere near the bottom.
 </p>
 <p>
 In this tiny example, the shim is larger than the code, but in a real application, this shim won't add much overhead to what you are making the user download.

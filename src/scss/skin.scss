@@ -1,6 +1,14 @@
 body {
   background: $paper;
   color: $ink;
+
+  header {
+    background: $ink;
+    color: $paper;
+  }
+  footer {
+    border-top: solid thin lighten($ink,50%);
+  }
 }
 pre {
   background: $ink;

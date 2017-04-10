@@ -1,5 +1,3 @@
-# Writing and Running Unit Tests
-
 Unit testing has always been possible in JavaScript, but early test runners required opening a page in a web
 browser that executed the tests.  Because of Node, we now can execute JavaScript on the command-line, without a
 browser, and this is how we'd like to work, because it's faster and easier to automate (e.g. in a continuous

@@ -1,16 +1,24 @@
 {
   "toc": [
     {
-      "name": "intro"
+      "name": "index",
+      "title": "What Problem Are We Solving?"
     },
     {
-      "name": "third_party_libs"
+      "name": "intro",
+      "title": "WTF is a Webpack"
     },
     {
-      "name": "testing"
+      "name": "third_party_libs",
+      "title": "Third Party Libraries"
     },
     {
-      "name": "production"
+      "name": "testing",
+      "title": "Unit Testing"
+    },
+    {
+      "name": "production",
+      "title": "Going to Production"
     }
   ]
 }

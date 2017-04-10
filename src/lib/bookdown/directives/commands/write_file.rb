@@ -4,7 +4,7 @@ class Bookdown::Directives::Commands::WriteFile < Bookdown::Directives::Commands
     @filename = filename
     @string = string
   end
-  def execute(_current_output_io)
+  def execute(_current_output_io,_logger)
     File.open(@filename,"w") do |file|
       file.puts(@string)
     end

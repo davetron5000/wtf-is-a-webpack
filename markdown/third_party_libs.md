@@ -1,5 +1,3 @@
-# Using Third-Party Libraries with Webpack
-
 This should be easy!  We have JavaScript code that we're going to write, but we want to use some existing libraries to help us do that.
 
 In the World Before WebPack™, you'd often add the library's CDN-hosted URL to a `<script>` tag and be on your way.

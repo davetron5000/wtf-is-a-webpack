@@ -11,16 +11,15 @@ module Bookdown
   class Parser
     include FileUtils
 
-    def initialize(work_dir: , dist_dir: )
-      @work_dir = Pathname(work_dir)
-      @dist = Pathname(dist_dir)
+    def initialize(work_dir: , screenshots_dir:, logger:)
+      @work_dir        = Pathname(work_dir)
+      @screenshots_dir = Pathname(screenshots_dir)
+      @logger          = logger
     end
 
-    def parse(file)
+    def parse(input: , output:)
       existing_multiline_directive = nil
 
-      input = Pathname(file)
-      output = @dist / input.basename
       File.open(output,"w") do |file|
         File.open(input) do |input|
           chdir @work_dir do
@@ -29,13 +28,12 @@ module Bookdown
                 commands = existing_multiline_directive.append(line)
                 command_executor.execute_all(commands,file)
                 existing_multiline_directive = nil unless existing_multiline_directive.continue?
-              elsif line =~ /^!DUMP_CONSOLE (.*)$/
-                html = $1
-                exec_and_print("phantomjs ../src/dump_console.js #{html}",file, show_command: false)
+              elsif sh_directive = Bookdown::Directives::JsConsole.recognize(line)
+                commands = sh_directive.execute
+                command_executor.execute_all(commands,file)
               elsif line =~ /^!SCREENSHOT (.*)$/
                 html,screenshot = $1.split(/\s+/)
-                mkdir_p @dist / "images"
-                exec_and_print("phantomjs ../src/screenshot.js #{html} #{@dist}/images/#{screenshot}",file) do |command,result|
+                exec_and_print("phantomjs ../src/screenshot.js #{html} #{@screenshots_dir}/#{screenshot}",file) do |command,result|
                   file.puts "![screenshot](images/#{screenshot})"
                 end
               elsif sh_directive = Bookdown::Directives::Sh.recognize(line)
@@ -62,7 +60,7 @@ module Bookdown
     end
 
     def command_executor
-      @command_executor ||= Bookdown::CommandExecutor.new
+      @command_executor ||= Bookdown::CommandExecutor.new(logger: @logger)
     end
 
     def language(filename)
@@ -76,15 +74,15 @@ module Bookdown
     end
 
     def exec_and_print(command,io, show_command: true, show_stdout: true, &block)
-      puts "Executing #{command}"
+      @logger.info "Executing #{command}"
       stdout,stderr,status = Open3.capture3(command)
-      puts stdout
-      puts stderr
+      @logger.debug stdout
+      @logger.info stderr
       if status.success?
         if block.nil?
           io.puts "```"
           io.puts "> #{command}" if show_command
-          io.puts stdout if show_stdout
+          io.puts stdout if show_stdout && stdout.strip != ""
           io.puts "```"
         else
           block.(command,stdout)
