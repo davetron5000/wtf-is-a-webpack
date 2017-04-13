@@ -107,7 +107,10 @@ body header {
   padding-top: 0;
   p {
     font-family: avenir next,avenir,sans-serif;
-    font-weight: 300;
+    font-weight: 400;
+    @media screen and (min-width: 30em) {
+      font-weight: 300;
+    }
     text-align: justify;
     text-indent: $sz2;
   }

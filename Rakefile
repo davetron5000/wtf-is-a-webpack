@@ -16,7 +16,7 @@ config = {
              work_dir: Pathname("work").expand_path,
   parsed_markdown_dir: Pathname("parsed_markdown").expand_path,
       screenshots_dir: Pathname("parsed_markdown").expand_path / "images",
-             site_dir: Pathname("site"),
+             site_dir: Pathname("../what-problem-does-it-solve.com/site").expand_path / "webpack",
 
 }
 

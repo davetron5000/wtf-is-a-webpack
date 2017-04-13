@@ -8,25 +8,26 @@ First, this means that every library everywhere has to agree on a unique set of 
 
 Secondly, it means that we have no control over when or how these libraries are loaded, which becomes important for writing tests.
 
-There is a third benefit, for super advanced hackers obsessed on performance, which is that by using module imports instead of dump-it-all-into-global-namespace, you can
-take the JavaScript of your application and create several differnet bundles, optimized for different use-cases, so your users only download what they need.
+Thirdly, this isn't how third-party JavaScript libraries are built - they kindof assume you are using a package manager like
+Webpack.
 
-For example, suppose you are using all of Angular for a particular page in your site, but your  main landing page doesn't need Angular.  You could create two bundles - one
-for your landing page and one for the other page, and users who never navigated to the Angular-powered don't have to download it.  We'll get there (in a while :).
 
 Point is, dumping into global namespace bad.  I promise not to get on my soapbox about this again, so let's get to it.  Let's add a library to our project!
 
+But wait, we don't really *have* a project, yet.  Let's make one real quick.
+
 ## Our Project Isn't Very Exciting
 
-First, we should have a project that doesn't something remotely interesting.  So, let's change it from a `console.log`ing masterpiece into something more useful.
+Despite how awesome our `console.log`'ing supersystem is, we should work on something more interesting.  The simplest thing I
+could think of is a markdown previewer.  There's a [markdown] module we can use, so that will be our third-party library!
 
-We'll create a simple markdown previewer using [markdown][npm-markdown] from NPM.
+[markdown]: https://github.com/evilstreak/markdown-js
 
 First, we'll add it to our `package.json` file using `yarn add`:
 
 !SH yarn add markdown
 
-This will also download the markdown package.
+This will also run `yarn install` which will download the markdown package to `node_modules`.
 
 Let's create our HTML first by replacing `dist/index.html` with the following:
 
@@ -50,8 +51,14 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
 </html>
 !END CREATE_FILE
 
-The way our amazing markdown app will work is that we'll create a function that, given some ids, can attach itself to a form to render a preview.  We'll assume that function
-creates an event listener we can give to our form.  So, in `index.js`, let's write:
+Here's how our amazing app will work:
+
+* We'll create a function that listens for submit events on forms and renders markdown
+* That function is created by *another* function that will accept as input: the document, the id of the source text area and the
+ed of the preview area.
+* When the form is submitted, we use the `markdown` library to render markdown from the source text area into the preview area.
+
+Our entry point is `js/index.js`, so let's create that like so:
 
 !CREATE_FILE js/index.js
 import markdownPreviewer from "./markdownPreviewer";
@@ -59,16 +66,44 @@ import markdownPreviewer from "./markdownPreviewer";
 window.onload = function() {
   document.getElementById("editor").addEventListener(
       "submit",
-      markdownPreviewer.attachPreviewer(document,    // pass in document
-                                        "source",    // id of source textarea
-                                        "preview")); // id of preview DOM element
+      markdownPreviewer.attachPreviewer(
+        document,    // pass in document
+        "source",    // id of source textarea
+        "preview")); // id of preview DOM element
 };
 !END CREATE_FILE
 
-The function `attachPreviewer` accepts three arguments: the document (so as not to depend on global state), the ID of a textarea that has our Markdown source, and the id of
-another area of the page where we can render the preview.
+`markdownPreviewer` is a file we'll create in a moment.  Hopefully you know enough JavaScript to see what's going on.  We're
+passing in `document` so that our code doesn't have to depend on global state.  That'll come in handy when writing tests.
 
 Now, let's create `js/markdownPreviewer.js`, which does all the work.
+
+We need to import our markdown library, however it's in `node_modules`, so how does that work?
+
+The answer is: it just does.  One of the scant defaults Webpack provides is to look in `node_modules` for files you import.
+
+Now, before we write `import markdown from "markdown";` we need to learn a bit more about how `import` works.
+
+The markdown package exports a structure like so;
+
+```json
+{
+  "markdown": {
+    "toHTML": function() { ... }
+  }
+}
+```
+
+Meaning, we'd need to write `markdown.markdown.toHTML`.  Yuck.  `import` allows you to pluck symbols out of the exported object
+by using curly braces:
+
+```javascript
+import { markdown } from "markdown"; // yo dawg
+```
+
+This allows us to write `markdown.toHTML`, which is better.
+
+With that said, here's how `js/markdownPreviewer.js` should look:
 
 !CREATE_FILE js/markdownPreviewer.js
 import { markdown } from "markdown";
@@ -88,53 +123,39 @@ export default {
 }
 !END CREATE_FILE
 
-First, let's call attention to that first `import` call.  It doesn't look like the others, because of those braces.  What is exported from the markdown library has this
-structure:
+Now, what's up with `export default`? Writing `import attachPreviewer from "./markdownPreviewer";` is asking Webpack (or whoever)
+to import the default exported thing.  Handy when you are just exporting one function.  Actualy, it's not handy, it's a confusing
+pain in the ass, but this is what you must do.
 
-```javascript
-{
-  markdown: {
-    toHTML: function(...) { }
-  }
-}
-```
-
-If we had used our previous `import` syntax:
-
-```javascript
-import md from "markdown";
-```
-
-We would've had to do `md.markdown.toHTML`.  Yuck.  The braces syntax allows us to import a specifc symbol from the exported object.  If there were multiple keys exported,
-we could import them like so:
-
-```javascript
-import { markdown, foobar } from "markdown";
-```
-
-I mention this because if you get the syntax wrong, you will not get a useful error message.  You will be confused.
-
-Another confusing thing, which produces no useful error message, has to do with the string after `from`.  If you have a careful eye, you'll see that when we import our code,
-we precede the string with a `./`, but when we imported this fresh third-party library, we didn't do that.
-
-Try removing the `./` from your `index.js` and running `yarn run webpack`.  I'll wait.
-
-Luckily for you, I told you to use the command-line switch `--display-error-details`.  By default, Webpack swallows errors and leaves you scratching your head as to what
-went wrong.  The error details don't exactly paint a clear picture, but if you read them closely, you can see what the deal is.
-
-What you are seeing in that massive amount of output is that Webpack is tryingn to find `markdownPreviewer.js` amidst literally every directory it can finde **except** the
-one where `index.js` lives.
-
-And thus, the `./` is special.  It means "don't try to find this in any `node_modules` directory anywhere on my machine, but instead treat this as a relative path from the
-file being processed".  That's not the design choice _I_ would've made, but that's how it works.
-
-Meaning: third-party libraries don't get a dot or slash in front, while your code gets both.
-
-Restore your `import` statement and look at the rest of the code.  It's not super interesting as we're just finding some elements based on the IDs given, and calling the `toHTML()` function provided by the markdown library.
+<aside class="sidebar">
+<h1>Why do some imports have <code>./</code> and some don't?</h1>
+<p>
+Remove the leading <code>./</code> from your import in <code>js/index.js</code>, then run <code>yarn webpack</code>.  I'll wait.
+</p>
+<p>
+Isn't that an <strong>amazing</strong> amount of useless output?  What is even going on?
+</p>
+<p>
+First, you should be thanking me for telling you to use <code>--display-error-details</code>, because without that, you would not
+be given any real error and would have no idea why things aren't working.  I can't explain to you why installing a package vomits
+an endless stream of output by default, but making an error doesn't, but I <strong>can</strong> tell you what's going on here.
+</p>
+<p>
+When you ask to import a string that doesn't have a leading <code>./</code>, it tells Webpack: “Look for the file everywhere on
+my hard drive <strong>except</strong> the current directory”.  I'm not kidding.  You can see the output desperately climbing up
+your directory hierarchy looking for a directory called <code>node_modules</code> in which it hopes to find
+<code>index.js</code>.
+</p>
+<p>
+When you precede the module name with a <code>./</code>, it tells Webpack to look in the current directory for the file.
+</p>
+<p>
+So, the rule of thumb is: your code usually has a <code>./<code> and third-party libraries don't.
+</aside>
 
 Let's package everything up and see if it works.
 
-!SH yarn run webpack
+!SH yarn webpack
 
 If we open up `dist/index.html`, we should see our UI:
 
