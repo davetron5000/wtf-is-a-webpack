@@ -18,7 +18,9 @@ module Bookdown
       end
 
       def execute
-        [ Commands::Sh.new(command: "phantomjs #{@js_exe} #{@html_file}") ]
+        [
+          Commands::PhantomJS.new(script_file: @js_exe, args: [ @html_file ], show_output: true),
+        ]
       end
     end
   end

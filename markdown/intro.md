@@ -171,8 +171,7 @@ ES6 (or ES2015?) introduced a standard way of bringing in modules.  This is what
 <p>
 This means we need a way to indicate what is being exported from a file.  That is done with the <code>export</code> keyword:
 </p>
-<pre><code class="javascript">
-export default {
+<pre><code class="javascript">export default {
   foo: function() {},
   bar: 42
 }
@@ -180,8 +179,7 @@ export default {
 <p>
 We are exporting <code>foo</code> and <code>bar</code>, which can be imported like so:
 </p>
-<pre><code class="javascript">
-import my_lib from './file'
+<pre><code class="javascript">import my_lib from './file'
 my_lib.foo(); // calls the function foo above
 my_lib.bar;   // 42
 </code></pre>

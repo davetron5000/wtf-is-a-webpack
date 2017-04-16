@@ -31,13 +31,16 @@ module Bookdown
               elsif sh_directive = Bookdown::Directives::JsConsole.recognize(line)
                 commands = sh_directive.execute
                 command_executor.execute_all(commands,file)
-              elsif line =~ /^!SCREENSHOT (.*)$/
-                html,screenshot = $1.split(/\s+/)
-                exec_and_print("phantomjs ../src/screenshot.js #{html} #{@screenshots_dir}/#{screenshot}",file) do |command,result|
-                  file.puts "![screenshot](images/#{screenshot})"
-                end
+              elsif screenshot_directive = Bookdown::Directives::Screenshot.recognize(line,@screenshots_dir)
+                commands = screenshot_directive.execute
+                command_executor.execute_all(commands,file)
               elsif sh_directive = Bookdown::Directives::Sh.recognize(line)
                 commands = sh_directive.execute
+                command_executor.execute_all(commands,file)
+              elsif do_and_screenshot_directive = Bookdown::Directives::DoAndScreenshot.recognize(line,@screenshots_dir)
+                raise "already inside an DO_AND_SCREENSHOT" if existing_multiline_directive
+                existing_multiline_directive = do_and_screenshot_directive
+                commands = existing_multiline_directive.execute
                 command_executor.execute_all(commands,file)
               elsif package_json_directive = Bookdown::Directives::PackageJson.recognize(line)
                 raise "already inside an PACKAGE_JSON" if existing_multiline_directive

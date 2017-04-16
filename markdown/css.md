@@ -72,7 +72,7 @@ And then manually copy our stylesheet into `dist/`:
 
 Now, our app looks a bit nicer:
 
-!SCREENSHOT dist/index.html styled_and_profiled.png
+!SCREENSHOT "Our app with some styling" dist/index.html styled_and_profiled.png
 
 This has the same problems with `bundle.js`.  We want it minified and we want it hashed and we generally don't want to deal with
 it.  We know Webpack can do those things for JavaScript, and it can do them for CSS.
@@ -285,7 +285,7 @@ Now to run Webpack:
 If we look at our `dist/index.html` file, we can see it's good, but the proof is in the pudding.  Open up `dist/index.html` in
 your browser and prepare to be amazed:
 
-!SCREENSHOT dist/index.html css_works.png
+!SCREENSHOT "Our app with CSS managed by Webpack" dist/index.html css_works.png
 
 Nice!
 
@@ -379,14 +379,13 @@ First, let's bring in tachyons:
 
 (Refreshingly free of dependencies)
 
-Much of the styling we've added is pretty simple stuff, so we'll let Tachyons handle all that for us.  We *do* want to set up
-some basic layout in `css/styles.css`, so replace that with:
+Much of the styling we've added is pretty simple stuff, so we'll let Tachyons handle all that for us. We'll leave the font
+setting in `css/styles.css` just to demonstrate that we can merge our styles with Tachyons'.  Replace all of `css/styles.css`
+with:
 
 !CREATE_FILE css/styles.css
-body {
-  margin-left: auto;
-  margin-right: auto;
-  width: 800px;
+html {
+  font-family: avenir next, avenir, helvetica, sans-serif;
 }
 !END CREATE_FILE
 
@@ -410,10 +409,10 @@ window.onload = function() {
 If you run Webpack now, you'll see the size of our CSS bundle increase, due to the inclusion of Tachyons.  But, let's actually
 use it so we can see it working.
 
-To get our font set as before, as well as the fore- and background colors, we style `body` like so:
+We'll use some of Tachyons' styles on `<body>` to set the colors, as well as pad the UI a bit (since Tachyons includes a reset):
 
 ```html
-<body class="avenir dark-gray bg-light-gray">
+<body class="dark-gray bg-light-gray ph4">
 ```
 
 We'd like our text area to look a bit nicer, so let's set it to fill the width of the body (800px, per `css/styles.css`), have a
@@ -457,7 +456,7 @@ All told, our template looks like so:
       <% } %>
     <% } %>
   </head>
-  <body class="avenir dark-gray bg-light-gray">
+  <body class="dark-gray bg-light-gray ph4">
     <h1>Markdown Preview-o-tron 7000!</h1>
     <form id="editor">
       <textarea 
@@ -494,7 +493,7 @@ OK, now we can run Webpack:
 
 If we open up `dist/index.html`, we'll see our nicely styled app, courtesy of Tachyons!
 
-!SCREENSHOT dist/index.html styled_by_tachyons.png
+!SCREENSHOT "Our app styled by Tachyons" dist/index.html styled_by_tachyons.png
 
 Don't get too wrapped up in a) Tachyons or b) how we've styled our app  The point is that we can mix a third-party CSS framework,
 along with our own CSS, just like we are doing with JavaScript.  This demonstrates that Webpack is a full-fledged asset pipeline.

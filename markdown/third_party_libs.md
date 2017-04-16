@@ -159,11 +159,16 @@ Let's package everything up and see if it works.
 
 If we open up `dist/index.html`, we should see our UI:
 
-!SCREENSHOT dist/index.html markdown_screen.png
+!SCREENSHOT "Our App's main UI" dist/index.html markdown_screen.png
 
 And, if you type in some markdown and hit the submit button, voila it's rendered inline by our markdown library:
 
-!SCREENSHOT dist/index.html markdown_screen2.png
+!DO_AND_SCREENSHOT "Our app rendering markdown" dist/index.html markdown_screen2.png
+var e = document.createEvent('Event'); 
+document.getElementById('source').value = "# This is a test\n\n* of\n* some\n* _markdown_"; 
+e.initEvent('submit',true,true); 
+document.getElementById('editor').dispatchEvent(e);
+!END DO_AND_SCREENSHOT
 
 Who would've thought it takes 1,000 words to talk about using third party libraries, but this is JavaScript and we
 should be thankful Webpack exists to make up for the language's deficiencies.
