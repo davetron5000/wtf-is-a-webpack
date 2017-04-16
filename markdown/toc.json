@@ -19,6 +19,14 @@
     {
       "name": "production",
       "title": "Going to Production"
+    },
+    {
+      "name": "development_environment",
+      "title": "A Workable Development Environment"
+    },
+    {
+      "name": "css",
+      "title": "Wrangling CSS, too"
     }
   ]
 }

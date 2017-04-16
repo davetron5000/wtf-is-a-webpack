@@ -63,16 +63,6 @@ module Bookdown
       @command_executor ||= Bookdown::CommandExecutor.new(logger: @logger)
     end
 
-    def language(filename)
-      if filename =~ /\.js/
-        "javascript"
-      elsif filename =~ /\.html/
-        "html"
-      else
-        raise "Can't determine language for #{filename}"
-      end
-    end
-
     def exec_and_print(command,io, show_command: true, show_stdout: true, &block)
       @logger.info "Executing #{command}"
       stdout,stderr,status = Open3.capture3(command)

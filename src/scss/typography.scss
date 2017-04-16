@@ -39,16 +39,19 @@ $sz5: $body-font-size * $line-height / 8;
 @mixin header-font {
   font-family: avenir next,avenir,sans-serif;
   line-height: $line-height;
+  text-rendering: optimizeLegibility;
 }
 @mixin body-font {
   font-size: $body-font-size;
   font-family: "Baskerville", "Georgia", "Times", serif;
   font-weight: 200;
   line-height: $line-height;
+  text-rendering: optimizeLegibility;
 }
 
 @mixin code-font {
   font-family: courier, monospace;
+  text-rendering: optimizeLegibility;
 }
 
 body {

@@ -59,6 +59,8 @@ module Bookdown
           "javascript"
         elsif filename.extname == ".html"
           "html"
+        elsif filename.extname == ".css"
+          "css"
         else
           raise "Can't determine language for #{filename}"
         end
