@@ -12,10 +12,11 @@ config = {
 
              scss_dir: Pathname("src") / "scss",
              html_dir: Pathname("src") / "html",
+    static_images_dir: Pathname("images").expand_path,
          markdown_dir: Pathname("markdown").expand_path,
              work_dir: Pathname("work").expand_path,
   parsed_markdown_dir: Pathname("parsed_markdown").expand_path,
-      screenshots_dir: Pathname("parsed_markdown").expand_path / "images",
+           images_dir: Pathname("parsed_markdown").expand_path / "images",
              site_dir: Pathname("../what-problem-does-it-solve.com/site").expand_path / "webpack",
 
 }
@@ -27,7 +28,7 @@ task :dirs do
   [
     :work_dir,
     :parsed_markdown_dir,
-    :screenshots_dir,
+    :images_dir,
     :site_dir,
   ].each do |config_option|
     rm_rf config[config_option], verbose: logger.level == Logger::DEBUG
@@ -38,7 +39,7 @@ end
 desc "Build it all"
 task :default => [ :dirs ] do
 
-  parser   = Bookdown::Parser.new(work_dir: config[:work_dir], screenshots_dir: config[:screenshots_dir], logger: logger)
+  parser   = Bookdown::Parser.new(work_dir: config[:work_dir], screenshots_dir: config[:images_dir], logger: logger)
   renderer = Bookdown::Renderer.new
   toc      = Bookdown::TOC.new(markdown_dir: config[:markdown_dir])
 
@@ -66,7 +67,13 @@ task :default => [ :dirs ] do
 
 
   sass_command.execute(StringIO.new,logger)
-  if config[:screenshots_dir].exist?
-    cp_r config[:screenshots_dir], config[:site_dir], verbose: logger.level == Logger::DEBUG
+  mkdir_p config[:images_dir]
+  Dir[config[:static_images_dir] / "*" ].each do |file|
+    next if [".",".."].include?(file)
+    logger.info "Copying #{file} to #{config[:images_dir]}"
+    cp file,config[:images_dir], verbose: logger.level == Logger::DEBUG
+  end
+  if config[:images_dir].exist?
+    cp_r config[:images_dir], config[:site_dir], verbose: logger.level == Logger::DEBUG
   end
 end

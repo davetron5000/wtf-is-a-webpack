@@ -90,7 +90,8 @@ With that in place, we can modify our `scripts` section to use this new value:
 {
   "scripts": {
     "webpack": "$(yarn bin)/webpack $npm_package_config_webpack_args",
-    "prod": "$(yarn bin)/webpack  $npm_package_config_webpack_args -p"
+    "prod": "$(yarn bin)/webpack  $npm_package_config_webpack_args -p",
+    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run"
   }
 }
 !END PACKAGE_JSON
@@ -119,7 +120,7 @@ I think I was clear on the command I wanted to run, but whatever.  `prod` is fin
 This more or less solves our immediate problem of not being able to develop.  Our workflow now is pretty straightforward:
 
 1. Write some tests
-2. Run our tests via `$(yarn bin)/karma start spec/karma.conf.js  --single-run` (exercise for the reader - put that in a `package.json` script!)
+2. Run our tests via `yarn karma`
 3. Write some code
 4. Watch our tests pass
 5. Build our development bundle via `yarn webpack`

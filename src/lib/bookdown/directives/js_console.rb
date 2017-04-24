@@ -18,8 +18,14 @@ module Bookdown
       end
 
       def execute
+        console_commands(@js_exe)
+      end
+
+    private
+
+      def console_commands(js_exe)
         [
-          Commands::PhantomJS.new(script_file: @js_exe, args: [ @html_file ], show_output: true),
+          Commands::PhantomJS.new(script_file: js_exe, args: [ @html_file ], show_output: true),
         ]
       end
     end

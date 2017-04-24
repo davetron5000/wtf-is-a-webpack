@@ -42,6 +42,11 @@ module Bookdown
                 existing_multiline_directive = do_and_screenshot_directive
                 commands = existing_multiline_directive.execute
                 command_executor.execute_all(commands,file)
+              elsif do_and_js_console_directive = Bookdown::Directives::DoAndJsConsole.recognize(line)
+                raise "already inside an DO_AND_DUMP_CONSOLE" if existing_multiline_directive
+                existing_multiline_directive = do_and_js_console_directive
+                commands = existing_multiline_directive.execute
+                command_executor.execute_all(commands,file)
               elsif package_json_directive = Bookdown::Directives::PackageJson.recognize(line)
                 raise "already inside an PACKAGE_JSON" if existing_multiline_directive
                 existing_multiline_directive = package_json_directive

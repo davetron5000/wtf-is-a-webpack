@@ -48,7 +48,7 @@ describe("canary", function() {
 });
 !END CREATE_FILE
 
-Hopefulyl, Jasmine's syntax and API is clear, but the idea is that we use `describe` to block of a bunch of tests we'll write,
+Hopefully, Jasmine's syntax and API is clear, but the idea is that we use `describe` to block of a bunch of tests we'll write,
 and then `it` for each test.  The idea is that these can be pieced together is some pidgen-like English that developers
 convince themselves is a specification.  It's silly, but works.
 
@@ -56,7 +56,7 @@ And now we have a test:
 
 !SH $(yarn bin)/jasmine
 
-OK, what has this to do with Webpack?  Well, we need to actualy locate our files to test.
+OK, what has this to do with Webpack?  Well, we need to actually locate our files to test.
 
 Assuming we could do that, what is the test we'd like to write?
 
@@ -408,6 +408,21 @@ And wouldn't you know it, it works!
 !SH $(yarn bin)/karma start spec/karma.conf.js  --single-run
 
 I'm not going to lie, I was not expecting this to work at all, especially with this fairly minimal amount of configuration.  While it's not ergonomic or developer-friendly, it does work, and it was easy enough to figure out just be reading documentation.  Take that Medium thinkpieces!
+
+Before we move on, let's wrap this up into a script inside `package.json`, because typing all this out sucks.
+
+!PACKAGE_JSON
+{
+  "scripts": {
+    "webpack": "$(yarn bin)/webpack --config webpack.config.js --display-error-details",
+    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run"
+  }
+}
+!END PACKAGE_JSON
+
+Now, we can run tests with `yarn karma`:
+
+!SH yarn karma
 
 The main thing to note here is the `webpack:` key in our Karma configuration file.  Our use of `require` is
 essentially the same as if we copy and pasted our Webpack configuration into our Karma configuration.  Re-using

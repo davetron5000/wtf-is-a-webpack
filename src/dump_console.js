@@ -8,12 +8,13 @@ var args   = system.args;
 page.onConsoleMessage = function(msg) {
   console.log(msg);
 };
-if (args.length > 1) {
-  args.forEach(function(arg, i) {
-    if (i > 0) {
-      page.open(arg, function () {
-        phantom.exit();
-      });
-    }
-  });
+if (args.length < 1) {
+  throw "You must supply the page to load";
 }
+var html = args[1];
+page.open(html, function (status) {
+  page.evaluate(function() {
+    // ::CUSTOM_CODE::
+  });
+  setTimeout(function() { phantom.exit(); },200);
+});

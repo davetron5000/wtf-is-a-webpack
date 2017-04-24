@@ -169,6 +169,17 @@ pre {
 code {
   @include code-font;
 }
+blockquote {
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-left: $sz2;
+  padding-right: $sz3;
+  p {
+    font-size: $f8;
+    line-height: 1.2;
+  }
+}
+
 
 .chapter {
   h1 {

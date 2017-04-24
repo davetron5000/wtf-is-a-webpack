@@ -30,10 +30,24 @@ img {
     text-align: center;
   }
   a {
-    font-weight: 600;
     text-decoration: none;
-    &::before {
-      content: " ☞";
+    padding: $sz5;
+    margin-left: -$sz5;
+    margin-right: -$sz5;
+    border-radius: $sz5;
+    color: $ink;
+    font-weight: 200;
+    -o-transition:.5s;
+    -ms-transition:.5s;
+    -moz-transition:.5s;
+    -webkit-transition:.5s;
+    transition:.5s;
+    &::after {
+      content: "°";
+      color: $link-marker;
+    }
+    &:hover {
+      background: $link-background;
     }
   }
   h1 {
