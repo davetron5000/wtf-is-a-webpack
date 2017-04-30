@@ -1,4 +1,5 @@
 require 'pathname'
+require_relative "../language"
 require_relative "commands/method_call"
 require_relative "commands/puts_to_file_io"
 require_relative "commands/append_to_file_name"
@@ -26,13 +27,26 @@ module Bookdown
         @continue = true
       end
 
+      class WarnIfFileExists < Commands::BaseCommand
+        def initialize(filename)
+          @filename = filename
+        end
+
+        def execute(_current_output_io,logger)
+          if File.exist?(@filename)
+            logger.warn("File #{@filename} already exists.  Consider using EDIT_FILE")
+          end
+        end
+      end
+
       def execute
         queue = []
+        queue << WarnIfFileExists.new(@filename)
         queue << Commands::MethodCall.new($stdout, :puts, "Deleting \"#{@filename}\"")
         queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
         queue << Commands::MethodCall.new($stdout,:puts,"Creating #{@filename.dirname}")
         queue << Commands::MethodCall.new(FileUtils,:mkdir_p,@filename.dirname)
-        queue << Commands::PutsToFileIO.new("```#{language(@filename)}")
+        queue << Commands::PutsToFileIO.new("```#{Bookdown::Language.new(@filename)}")
         queue
       end
 
@@ -50,20 +64,6 @@ module Bookdown
           queue << Commands::PutsToFileIO.new(line)
         end
         queue
-      end
-
-    private
-
-      def language(filename)
-        if filename.extname == ".js"
-          "javascript"
-        elsif filename.extname == ".html"
-          "html"
-        elsif filename.extname == ".css"
-          "css"
-        else
-          raise "Can't determine language for #{filename}"
-        end
       end
     end
   end

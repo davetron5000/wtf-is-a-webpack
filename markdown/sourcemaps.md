@@ -47,47 +47,22 @@ configuration, which is given to its constructor.
 
 Here's the entire file:
 
-!CREATE_FILE webpack.config.js
-const path           = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const HtmlPlugin     = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-
-module.exports = {
-  entry: './js/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[chunkhash]-bundle.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: {
-            loader: "css-loader",
-            options: {
-              minimize: true
-            }
-          }
-        })
-      }
-    ]
-  },
-  plugins: [
-    new UglifyJSPlugin({
-      sourceMap: true // <-------
-    }),
-    new ExtractTextPlugin('[chunkhash]-styles.css'),
-    new HtmlPlugin({
-      inject: false,
-      template: "html/index.html"
-    })
-  ],
-  devtool: "inline-source-map" // <------
-};
-!END CREATE_FILE
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "    new UglifyJSPlugin",
+  "replace_with": [
+    "    new UglifyJSPlugin({",
+    "      sourceMap: true",
+    "    }),"
+  ]
+},
+{
+  "match": "  },",
+  "insert_after": [
+    "  devtool: \"inline-source-map\","
+  ]
+}
+!END EDIT_FILE
 
 Run Webpack:
 
@@ -116,48 +91,14 @@ that we want sourcemaps. Since that configuration is being passed to the `Extrac
 
 Here's what our entire Webpack configuration should look like:
 
-!CREATE_FILE webpack.config.js
-const path           = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const HtmlPlugin     = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-
-module.exports = {
-  entry: './js/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[chunkhash]-bundle.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: {
-            loader: "css-loader",
-            options: {
-              sourceMap: true, // <------
-              minimize: true
-            }
-          }
-        })
-      }
-    ]
-  },
-  plugins: [
-    new UglifyJSPlugin({
-      sourceMap: true
-    }),
-    new ExtractTextPlugin('[chunkhash]-styles.css'),
-    new HtmlPlugin({
-      inject: false,
-      template: "html/index.html"
-    })
-  ],
-  devtool: "inline-source-map"
-};
-!END CREATE_FILE
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "            options: {",
+  "insert_after": [
+    "              sourceMap: true,"
+  ]
+}
+!END EDIT_FILE
 
 If you run Webpack:
 
@@ -173,53 +114,20 @@ What about tests?
 
 If we introduce a failure into our tests, we'll see a stack trace, but the line number is useless, as before.
 
-First, remove the `throw` we added before from `js/markdownPreviewer.js`.  Next, let's introduce a test failure in our test.
+First, remove the `throw` you added before from `js/markdownPreviewer.js`.  Next, let's introduce a test failure in our test.
 
 Here's our entire test file with a failure introduced:
 
-!CREATE_FILE spec/markdownPreview.spec.js
-import markdownPreviewer from "../js/markdownPreviewer"
-
-var event = {
-  preventDefaultCalled: false,
-  preventDefault: function() { this.preventDefaultCalled = true; }
-};
-var source = {
-  value: "This is _some markdown_"
-};
-var preview = {
-  innerHTML: ""
-};
-
-var document = {
-  getElementById: function(id) {
-    if (id === "source") {
-      return source;
-    }
-    else if (id === "preview") {
-      return preview;
-    }
-    else {
-      throw "Don't know how to get " + id;
-    }
-  }
+!EDIT_FILE spec/markdownPreview.spec.js /* */
+{
+  "match": "      expect(preview.innerHTML).toBe",
+  "replace_with": [
+    "        expect(preview.innerHTML).toBe(\"<p>This is <i>some markdown</em></p>\");",
+    "        // --FAILURE--------------------------------^^^",
+    "        //"
+  ]
 }
-
-describe("markdownPreviewer", function() {
-  describe("attachPreviewer", function() {
-    it("renders markdown to the preview element", function() {
-      var submitHandler = markdownPreviewer.attachPreviewer(document,"source","preview");
-      source.value = "This is _some markdown_";
-
-      submitHandler(event);
-      expect(preview.innerHTML).toBe("<p>This is <i>some markdown</em></p>");
-      //--FAILURE--------------------------------^^^
-      //
-      expect(event.preventDefaultCalled).toBe(true);
-    });
-  });
-});
-!END CREATE_FILE
+!END EDIT_FILE
 
 !SH{nonzero} yarn karma
 
@@ -231,21 +139,14 @@ That preprocessor is `karma-sourcemap-loader`, which we can install thusly:
 
 We configure it *after* the Webpack preprocessor, like so:
 
-!CREATE_FILE spec/karma.conf.js
-module.exports = function(config) {
-  config.set({
-    frameworks: ['jasmine'],
-    files: [
-      '**/*.spec.js'
-    ],
-    preprocessors: {
-      '**/*.spec.js': [ 'webpack', 'sourcemap' ]
-    },
-    webpack: require("../webpack.config.js"),
-    browsers: ['PhantomJS']
-  })
+!EDIT_FILE spec/karma.conf.js /* */
+{
+  "match": "      '**/*.spec.js': [ 'webpack'",
+  "replace_with": [
+    "      '**/*.spec.js': [ 'webpack', 'sourcemap' ]"
+  ]
 }
-!END CREATE_FILE
+!END EDIT_FILE
 
 Now, when we run karma, we should see the stack trace reference a line in our test file:
 
@@ -253,11 +154,9 @@ Now, when we run karma, we should see the stack trace reference a line in our te
 
 It does reference a line, which is great, but it's not the correct one, which is not great.
 
-As of this writing, PhantomJS does not properly read the sourcemap and reports the wrong line number.  This sucks, but all is not
-lost!
+As of this writing, PhantomJS does not properly read the sourcemap and reports the wrong line number.  This sucks, but all is not lost!
 
-If you recall, we've been using the command line switch `--single-run` to run our tests.  If we omit that, Karma will run our
-tests and then sit there, waiting.
+If you recall, we've been using the command line switch `--single-run` to run our tests.  If we omit that, Karma will run our tests and then sit there, waiting.
 
 ```
 > $(yarn bin)/karma start spec/karma.conf.js
@@ -269,8 +168,7 @@ If you look at the output, it will show something like this:
 22 04 2017 14:36:17.997:INFO [karma]: Karma v1.6.0 server started at http://0.0.0.0:9876/
 ```
 
-If you navigate to that url and port in your web browser, Karma will run your tests in that browser!  If we do this in Chrome,
-the stack trace is correct:
+If you navigate to that url and port in your web browser, Karma will run your tests in that browser!  If we do this in Chrome, the stack trace is correct:
 
 ```
 22 04 2017 14:37:02.819:INFO [Chrome 57.0.2987 (Mac OS X 10.12.4)]: Connected on socket 7nP6V7W0YsH5C0f4AAAB with id manual-9961
@@ -286,23 +184,16 @@ Chrome 57.0.2987 (Mac OS X 10.12.4): Executed 3 of 3 (1 FAILED) (0.045 secs / 0.
 TOTAL: 2 FAILED, 4 SUCCESS
 ```
 
-It's hard to make out, but you can see that the Chrome run of the test is pointing to line 40, which is where the failing
-expectation is.
+It's hard to make out, but you can see that the Chrome run of the test is pointing to line 40, which is where the failing expectation is.
 
 It's not ideal, but it *is* a way to get stack traces for your tests.
 
 You can hit Ctrl-C to exit Karma.
 
-Not the greatest conclusion to our journey to have a sane development environment, but given what the language gives us—pretty
-much nothing—we've made the best of it.
+Not the greatest conclusion to our journey to have a sane development environment, but given what the language gives us—pretty much nothing—we've made the best of it.
 
-We can also see the tension between monolithic everything-is-included systems like Webpack, and the attempts at modularity and
-flexibility.  Because neither Webpack nor Karma were designed to work together, and because each tool has a completer proprietary
-plugin/extension mechanism, we have to jump through a lot of hoops to get things working together.  I'll touch on this later
-toward the end of our journey, but suffice it to say, the design of these tools seems to have the worst of both being monolithic
-and being modular.
+We can also see the tension between monolithic everything-is-included systems like Webpack, and the attempts at modularity and flexibility.  Because neither Webpack nor Karma were designed to work together, and because each tool has a completely proprietary plugin/extension mechanism, we have to jump through a lot of hoops to get them working together.  I'll touch on this later toward the end of our journey, but suffice it to say, the design of these tools seems to have the worst of both being monolithic and being modular.
 
-So, what's next?  You've probably noticed that running Webpack is slow.  Even if we adopted a full-blown TDD way of working,
-we're still going to be running Webpack a lot, and spending most of our time waiting on it.  Can we make that faster?
+So, what's next?  You've probably noticed that running Webpack is slow.  Even if we adopted a full-blown TDD way of working, we're still going to be running Webpack a lot, and spending most of our time waiting on it.  Can we make that faster?
 
 

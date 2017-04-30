@@ -37,6 +37,11 @@ module Bookdown
               elsif sh_directive = Bookdown::Directives::Sh.recognize(line)
                 commands = sh_directive.execute
                 command_executor.execute_all(commands,file)
+              elsif edit_directive = Bookdown::Directives::EditFile.recognize(line)
+                raise "already inside an EDIT_FILE" if existing_multiline_directive
+                existing_multiline_directive = edit_directive
+                commands = existing_multiline_directive.execute
+                command_executor.execute_all(commands,file)
               elsif do_and_screenshot_directive = Bookdown::Directives::DoAndScreenshot.recognize(line,@screenshots_dir)
                 raise "already inside an DO_AND_SCREENSHOT" if existing_multiline_directive
                 existing_multiline_directive = do_and_screenshot_directive

@@ -25,33 +25,24 @@ If it's `"production"`, we do one thing, if it's `"development"`, we do another.
 Webpack will set this to `"production"` if you use `-p` on the command-line.  Given that, we could enhance our `index.html` to
 check `NODE_ENV` and use the CDN or not, depending on the value:
 
-!CREATE_FILE html/index.html
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-    <h1>Markdown Preview-o-tron 7000!</h1>
-    <form id="editor">
-      <textarea id="source" rows="10" cols="80"></textarea>
-      <br>
-      <input type="submit" value="Preview!">
-    </form>
-    <hr>
-    <section id="preview">
-    </section>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } %>
-  </body>
-</html>
-!END CREATE_FILE
+!EDIT_FILE html/index.html <!-- -->
+{
+  "match": "    </section>",
+  "insert_after": [
+    "    <% if (process.env.NODE_ENV === 'production') { %>"
+  ]
+},
+{
+  "match": "    <% } %>",
+  "insert_after": [
+    "    <% } else { %>",
+    "      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>",
+    "        <script src=\"<%= htmlWebpackPlugin.files.chunks[chunk].entry %>\"></script>",
+    "      <% } %>",
+    "    <% } %>"
+  ]
+}
+!END EDIT_FILE
 
 Now, when we run `yarn webpack`, it generates our deveopment bundle:
 

@@ -33,34 +33,14 @@ textarea {
 
 We can now reference this in `html/index.html`:
 
-!CREATE_FILE html/index.html
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <h1>Markdown Preview-o-tron 7000!</h1>
-    <form id="editor">
-      <textarea id="source" rows="10" cols="80"></textarea>
-      <br>
-      <input type="submit" value="Preview!">
-    </form>
-    <hr>
-    <section id="preview">
-    </section>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } %>
-  </body>
-</html>
-!END CREATE_FILE
+!EDIT_FILE html/index.html <!-- -->
+{
+  "match": "  <head>",
+  "insert_after": [
+    "    <link rel=\"stylesheet\" href=\"styles.css\">"
+  ]
+}
+!END EDIT_FILE
 
 Run Webpack:
 
@@ -96,53 +76,35 @@ To load CSS, we'll install `css-loader`:
 To use this loader, we'll add a new section to our Webpack configuration, called `modules`.  This gives us a peek into how Webpack
 views itsef.  The `modules` section controls how Webpack treats different types of modules we might import.  This statement implies that there *are* types other than just JavaScript.  It's starting to make sense.
 
-Inside `modules:`, we create a `rules:` array, which will itemize out all the rules for handling modules that aren't JavaScript.
+Inside `module:`, we create a `rules:` array, which will itemize out all the rules for handling modules that aren't JavaScript.
 Each rule has a test, and a loader to use:
 
-!CREATE_FILE webpack.config.js
-const path           = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const HtmlPlugin     = require('html-webpack-plugin');
-
-module.exports = {
-  entry: './js/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[chunkhash]-bundle.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: 'css-loader'
-      }
-    ]
-  },
-  plugins: [
-    new UglifyJSPlugin(),
-    new HtmlPlugin({
-      inject: false,
-      template: "html/index.html"
-    }),
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "  plugins: ",
+  "insert_before": [
+    "  module: {",
+    "    rules: [",
+    "      {",
+    "        test: /\.css$/,",
+    "        use: 'css-loader'",
+    "      }",
+    "    ]",
+    "  },"
   ]
-};
-!END CREATE_FILE
+}
+!END EDIT_FILE
 
 With this in place, we can modify `js/index.js` to import our CSS:
 
-!CREATE_FILE js/index.js
-import "../css/styles.css";
-import markdownPreviewer from "./markdownPreviewer";
-
-window.onload = function() {
-  document.getElementById("editor").addEventListener(
-      "submit",
-      markdownPreviewer.attachPreviewer(
-        document,    // pass in document
-        "source",    // id of source textarea
-        "preview")); // id of preview DOM element
-};
-!END CREATE_FILE
+!EDIT_FILE js/index.js /* */
+{
+  "match": "import",
+  "insert_before": [
+    "import \"../css/styles.css\";"
+  ]
+}
+!END EDIT_FILE
 
 Note that we're importing `"../css/styles.css"`, because imports that have dots in front of them are relative to the directory
 where the file being processed is located.
@@ -172,46 +134,35 @@ _plugin_, will write out our CSS file.  We can even use the magic `"[chunkhash]"
 
 Here's what our Webpack configuration now looks like:
 
-!CREATE_FILE webpack.config.js
-const path           = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const HtmlPlugin     = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-
-module.exports = {
-  entry: './js/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[chunkhash]-bundle.js'
-  },
-  module: {
-    rules: [{
-      test: /\.css$/,
-      use: ExtractTextPlugin.extract({
-        use: 'css-loader'
-      })
-    }]
-  },
-  plugins: [
-    new UglifyJSPlugin(),
-    new ExtractTextPlugin('[chunkhash]-styles.css'),
-    new HtmlPlugin({
-      inject: false,
-      template: "html/index.html"
-    })
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "const HtmlPlugin",
+  "insert_after": [
+    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
   ]
-};
-!END CREATE_FILE
+},
+{
+  "match": "        use: 'css-loader'",
+  "replace_with": [
+    "        use: ExtractTextPlugin.extract({",
+    "          use: 'css-loader'",
+    "        })"
+  ]
+},
+{
+  "match": "    new UglifyJSPlugin",
+  "insert_after": [
+    "    new ExtractTextPlugin('[chunkhash]-styles.css'),"
+  ]
+}
+!END EDIT_FILE
 
 Now, when we run Webpack, our CSS file is being created separately and is available in `dist/`:
 
 !SH yarn webpack
 !SH ls dist/*.css
 
-Cool.  But it's *still*  not being used in our HTML.  The `HtmlPlugin` we are using is capable of inserting the CSS into our
-template.  To access our JavaScript files, we used the code `htmlWebpackPlugin.files.chunks[chunk].entry`.  I didn't explain what
-that was or how I figured that out, so now is a good time.
+Cool.  But it's *still*  not being used in our HTML.  The `HtmlPlugin` we are using is capable of inserting the CSS into our template.  To access our JavaScript files, we used the code `htmlWebpackPlugin.files.chunks[chunk].entry`.  I didn't explain what that was or how I figured that out, so now is a good time.
 
 When executing the template, `HtmlPlugin` makes the variable `htmlWebpackPlugin` available, and it has a structure like so:
 
@@ -234,45 +185,24 @@ When executing the template, `HtmlPlugin` makes the variable `htmlWebpackPlugin`
 }
 ```
 
-We can see what's in `entry`: the JS output files.  Why this is called _entry_, when it's clearly vending the _output_ is a
-mystery to me.  Nevertheless, we can see in the structure that alongside `entry`, we have `css`.  And, it turns out, this has the value of our hashed stylesheet, so we can use code just like we did to handle our JavaScript to handle our CSS (as well as checking `process.env.NODE_ENV` to know when to use our CDN):
+We can see what's in `entry`: the JS output files.  Why this is called _entry_, when it's clearly vending the _output_ is a mystery to me.  Nevertheless, we can see in the structure that alongside `entry`, we have `css`.  And, it turns out, this has the value of our hashed stylesheet, so we can use code just like we did to handle our JavaScript to handle our CSS (as well as checking `process.env.NODE_ENV` to know when to use our CDN):
 
-!CREATE_FILE html/index.html
-<!DOCTYPE html>
-<html>
-  <head>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <link rel="stylesheet" href="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].css %>"/>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.chunks[chunk].css %>" />
-      <% } %>
-    <% } %>
-  </head>
-  <body>
-    <h1>Markdown Preview-o-tron 7000!</h1>
-    <form id="editor">
-      <textarea id="source" rows="10" cols="80"></textarea>
-      <br>
-      <input type="submit" value="Preview!">
-    </form>
-    <hr>
-    <section id="preview">
-    </section>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } %>
-  </body>
-</html>
-!END CREATE_FILE
+!EDIT_FILE html/index.html <!-- -->
+{
+  "match": "    <link rel=",
+  "replace_with": [
+    "    <% if (process.env.NODE_ENV === 'production') { %>",
+    "      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>",
+    "        <link rel=\"stylesheet\" href=\"//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].css %>\"/>",
+    "      <% } %>",
+    "    <% } else { %>",
+    "      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>",
+    "        <link rel=\"stylesheet\" href=\"<%= htmlWebpackPlugin.files.chunks[chunk].css %>\" />",
+    "      <% } %>",
+    "    <% } %>"
+  ]
+}
+!END EDIT_FILE
 
 Now, for the moment of truth.  Let's again clear out `dist/` just to be sure what we are about to do has the right effect:
 
@@ -282,8 +212,7 @@ Now to run Webpack:
 
 !SH yarn webpack
 
-If we look at our `dist/index.html` file, we can see it's good, but the proof is in the pudding.  Open up `dist/index.html` in
-your browser and prepare to be amazed:
+If we look at our `dist/index.html` file, we can see it's good, but the proof is in the pudding.  Open up `dist/index.html` in your browser and prepare to be amazed:
 
 !SCREENSHOT "Our app with CSS managed by Webpack" dist/index.html css_works.png
 
@@ -293,8 +222,7 @@ We still aren't minifying our CSS, however.
 
 ## Minify CSS
 
-Wepack loaders often take options, which `css-loader` does.  One of the options is `minimize:` which is documented to minify our
-CSS (which not call it `minify:`?!).  Normaly, options are set inside the `use:` configuration like so:
+Wepack loaders often take options, which `css-loader` does.  One of the options is `minimize:` which is documented to minify our CSS (which not call it `minify:`?!).  Normally, options are set inside the `use:` configuration like so:
 
 ```javascript
 use : {
@@ -305,8 +233,7 @@ use : {
 }
 ```
 
-Since we are using `ExtractTextPlugin`, it's a bit different.  The way `ExtractTextPlugin` works is that its argument is of the
-form the configuration expects if we weren't using it.  It's hard to explain.  Here's what you have to do:
+Since we are using `ExtractTextPlugin`, it's a bit different.  The way `ExtractTextPlugin` works is that its argument is of the form the configuration expects if we weren't using it.  It's hard to explain.  Here's what you have to do:
 
 ```javascript
 use: ExtractTextPlugin.extract({
@@ -319,50 +246,23 @@ use: ExtractTextPlugin.extract({
 })
 ```
 
-The value for `use:` can just be a string—the name of the loader.  If we want to do anything else, such as configure it, we have
-to use an object that has the key `loader` in it.  That's the form we're using inside `ExtractTextPlugin.extract` and is also why
-the previous configuration of `use: "css-loader"` worked.  See, Webpack *does* have some ergonomics!
+The value for `use:` can just be a string—the name of the loader.  If we want to do anything else, such as configure it, we have to use an object that has the key `loader` in it.  That's the form we're using inside `ExtractTextPlugin.extract` and is also why the previous configuration of `use: "css-loader"` worked.  See, Webpack *does* have some ergonomics!
 
 OK, this means our entire Webpack config looks like so:
 
-!CREATE_FILE webpack.config.js
-const path           = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const HtmlPlugin     = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-
-module.exports = {
-  entry: './js/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[chunkhash]-bundle.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: {
-            loader: "css-loader",
-            options: {
-              minimize: true
-            }
-          }
-        })
-      }
-    ]
-  },
-  plugins: [
-    new UglifyJSPlugin(),
-    new ExtractTextPlugin('[chunkhash]-styles.css'),
-    new HtmlPlugin({
-      inject: false,
-      template: "html/index.html"
-    })
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "          use: 'css-loader'",
+  "replace_with": [
+    "          use: {",
+    "            loader: \"css-loader\",",
+    "            options: {",
+    "              minimize: true",
+    "            }",
+    "          }"
   ]
-};
-!END CREATE_FILE
+}
+!END EDIT_FILE
 
 And *now*, we have minified CSS, with a hash, ready for our CDN.
 
@@ -391,23 +291,16 @@ html {
 
 To bring in Tachyons to our CSS bundle we `import` it just like anything else:
 
-!CREATE_FILE js/index.js
-import "tachyons";
-import "../css/styles.css";
-import markdownPreviewer from "./markdownPreviewer";
+!EDIT_FILE js/index.js /* */
+{
+  "match": "import",
+  "insert_before": [
+    "import \"tachyons\";"
+  ]
+}
+!END EDIT_FILE
 
-window.onload = function() {
-  document.getElementById("editor").addEventListener(
-      "submit",
-      markdownPreviewer.attachPreviewer(
-        document,    // pass in document
-        "source",    // id of source textarea
-        "preview")); // id of preview DOM element
-};
-!END CREATE_FILE
-
-If you run Webpack now, you'll see the size of our CSS bundle increase, due to the inclusion of Tachyons.  But, let's actually
-use it so we can see it working.
+If you run Webpack now, you'll see the size of our CSS bundle increase, due to the inclusion of Tachyons.  But, let's actually use it so we can see it working.
 
 We'll use some of Tachyons' styles on `<body>` to set the colors, as well as pad the UI a bit (since Tachyons includes a reset):
 
@@ -415,8 +308,7 @@ We'll use some of Tachyons' styles on `<body>` to set the colors, as well as pad
 <body class="dark-gray bg-light-gray ph4">
 ```
 
-We'd like our text area to look a bit nicer, so let's set it to fill the width of the body (800px, per `css/styles.css`), have a
-30% black border, with a slight border radius, and a bit of padding inside:
+We'd like our text area to look a bit nicer, so let's set it to fill the width of the body (800px, per `css/styles.css`), have a 30% black border, with a slight border radius, and a bit of padding inside:
 
 ```html
 <textarea 
@@ -426,8 +318,7 @@ We'd like our text area to look a bit nicer, so let's set it to fill the width o
   class="w-100 ba br2 pa2 b--black-30"></textarea>
 ```
 
-We'd also like our preview button to be a bit fancier, so let's set that to be in a slightly washed-out green, and give it some
-padding and borders so it looks like a button.  We'll also set it to zoom on hover, so it feels like a real app:
+We'd also like our preview button to be a bit fancier, so let's set that to be in a slightly washed-out green, and give it some padding and borders so it looks like a button.  We'll also set it to zoom on hover, so it feels like a real app:
 
 ```html
 <input 
@@ -436,55 +327,37 @@ padding and borders so it looks like a button.  We'll also set it to zoom on hov
   class="grow pointer ba br3 bg-washed-green ph3 pv2">
 ```
 
-(If you are incredulous at all this “mixing” of presentation and markup, please do read the linked article above.  Trust me, this
- way of writing CSS is *soooooo* much better than snowflaking every single thing.  But, this isn't the point.  The point is we
- are using third party CSS with Webpack.)
+(If you are incredulous at all this “mixing” of presentation and markup, please do read the linked article above.  Trust me, this way of writing CSS is *soooooo* much better than snowflaking every single thing.  But, this isn't the point.  The point is we are using third party CSS with Webpack.)
 
 All told, our template looks like so:
 
-!CREATE_FILE html/index.html
-<!DOCTYPE html>
-<html>
-  <head>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <link rel="stylesheet" href="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].css %>"/>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.chunks[chunk].css %>" />
-      <% } %>
-    <% } %>
-  </head>
-  <body class="dark-gray bg-light-gray ph4">
-    <h1>Markdown Preview-o-tron 7000!</h1>
-    <form id="editor">
-      <textarea 
-        id="source" 
-        rows="10" 
-        cols="80" 
-        class="w-100 ba br2 pa2 b--black-30"></textarea>
-      <br>
-      <input 
-        type="submit" 
-        value="Preview!" 
-        class="grow pointer ba br3 bg-washed-green ph3 pv2">
-    </form>
-    <hr>
-    <section id="preview">
-    </section>
-    <% if (process.env.NODE_ENV === 'production') { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } else { %>
-      <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-        <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-      <% } %>
-    <% } %>
-  </body>
-</html>
-!END CREATE_FILE
+!EDIT_FILE html/index.html <!-- -->
+{
+  "match": "  <body>",
+  "replace_with": [
+    "  <body class=\"dark-gray bg-light-gray ph4\">"
+  ]
+},
+{
+  "match": "      <textarea id=",
+  "replace_with": [
+"      <textarea",
+"        id=\"source\"",
+"        rows=\"10\"",
+"        cols=\"80\"",
+"        class=\"w-100 ba br2 pa2 b--black-30\"></textarea>"
+  ]
+},
+{
+  "match": "      <input type=\"submit\" value=\"Preview!\">",
+  "replace_with": [
+"      <input", 
+"        type=\"submit\"", 
+"        value=\"Preview!\"",
+"        class=\"grow pointer ba br3 bg-washed-green ph3 pv2\">"
+  ]
+}
+!END EDIT_FILE
 
 OK, now we can run Webpack:
 
@@ -495,8 +368,7 @@ If we open up `dist/index.html`, we'll see our nicely styled app, courtesy of Ta
 
 !SCREENSHOT "Our app styled by Tachyons" dist/index.html styled_by_tachyons.png
 
-Don't get too wrapped up in a) Tachyons or b) how we've styled our app  The point is that we can mix a third-party CSS framework,
-along with our own CSS, just like we are doing with JavaScript.  This demonstrates that Webpack is a full-fledged asset pipeline.
+Don't get too wrapped up in a) Tachyons or b) how we've styled our app  The point is that we can mix a third-party CSS framework, along with our own CSS, just like we are doing with JavaScript.  This demonstrates that Webpack is a full-fledged asset pipeline.
 
 And *this* meets our needs as web developers.
 

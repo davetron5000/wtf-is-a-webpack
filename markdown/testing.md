@@ -89,8 +89,7 @@ worry, we'll define all these.
 
 Before we see where those come from, let's assume they exist so we can write our test.
 
-First thing is to call `attachPreviewer` and get the function we're going to execute. Let's assume (I know, SO MANY
-assumptions…it'll work out, I promise) that we have `markdownPreviewer` available, which is our code.
+First thing is to call `attachPreviewer` and get the function we're going to execute. Let's assume (I know, SO MANY assumptions…it'll work out, I promise) that we have `markdownPreviewer` available, which is our code.
 
 ```javascript
 var submitHandler = markdownPreviewer.attachPreviewer(document,"source","preview");
@@ -327,7 +326,7 @@ There's no technical reason to have to provide any of this information, but Java
 files or what testing frameworks to use.  It's cool with anything, so you do you (even though your job is to get things done and
 not evaluate a bunch of essetially equivalent testing frameworks).
 
-The mimimal configuration would be :
+The mimimal configuration would the following, which you should place into `spec/karma.conf.js`:
 
 !CREATE_FILE spec/karma.conf.js
 module.exports = function(config) {
@@ -382,26 +381,19 @@ Karma's configuration file has an option called `preprocessors` that allows us t
 
 !SH yarn add -D karma-webpack
 
-Now, we'll add it as a preprocessor and use `require` to bring in our existing Webpack config (not `import`.  Sigh).  Your entire
-`spec/karma.conf.js` will look like so:
+Now, we'll add it as a preprocessor and use `require` to bring in our existing Webpack config (not `import`.  Sigh).  Your entire `spec/karma.conf.js` will look like so:
 
-!SH rm spec/karma.conf.js
-
-!CREATE_FILE spec/karma.conf.js
-module.exports = function(config) {
-  config.set({
-    frameworks: ['jasmine'],
-    files: [
-      '**/*.spec.js'
-    ],
-    preprocessors: {
-      '**/*.spec.js': [ 'webpack' ]
-    },
-    webpack: require('../webpack.config.js'),
-    browsers: ['PhantomJS']
-  })
+!EDIT_FILE spec/karma.conf.js /* */
+{
+  "match": "    browsers:",
+  "insert_before": [
+    "    preprocessors: {",
+    "      '**/*.spec.js': [ 'webpack' ]",
+    "    },",
+    "    webpack: require('../webpack.config.js'),"
+  ]
 }
-!END CREATE_FILE
+!END EDIT_FILE
 
 And wouldn't you know it, it works!
 
