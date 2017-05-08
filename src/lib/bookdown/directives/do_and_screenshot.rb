@@ -1,4 +1,5 @@
-require 'tempfile'
+require "tempfile"
+require_relative "screenshot"
 
 module Bookdown
   module Directives
@@ -7,6 +8,8 @@ module Bookdown
         if line =~ /^!DO_AND_SCREENSHOT (\"[^"]+\") (.*)$/
           title = $1
           html,screenshot_image_name,width,height = $2.split(/\s+/)
+
+          title = title.gsub(/^\"/,'').gsub(/\"$/,'')
           self.new(title,html,screenshot_image_name,width,height,screenshots_dir)
         else
           nil
@@ -20,7 +23,7 @@ module Bookdown
       end
 
       class MakeExecutableCommand < Commands::BaseCommand
-        attr_reader :generated_source
+        attr_reader :generated_source, :code
         def initialize(code,source)
           @code = code
           @source = source

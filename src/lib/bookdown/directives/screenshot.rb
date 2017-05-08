@@ -1,5 +1,6 @@
 require_relative "screenshot"
 require_relative "commands/phantom_js"
+require_relative "commands/puts_to_file_io"
 
 module Bookdown
   module Directives
@@ -14,6 +15,7 @@ module Bookdown
         end
       end
 
+      attr_reader :html_file, :title, :screenshots_dir
       def initialize(title,html_file, screenshot_image_name, width, height, screenshots_dir)
         @title                 = title
         @html_file             = html_file

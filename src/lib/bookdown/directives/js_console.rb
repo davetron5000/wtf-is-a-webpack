@@ -1,4 +1,6 @@
 require "pathname"
+require_relative "commands/phantom_js"
+
 module Bookdown
   module Directives
     class JsConsole
@@ -10,6 +12,8 @@ module Bookdown
           nil
         end
       end
+
+      attr_reader :html_file
 
       def initialize(html_file)
         @html_file = html_file

@@ -1,5 +1,6 @@
 require_relative "base_command"
 class Bookdown::Directives::Commands::AppendToFileName < Bookdown::Directives::Commands::BaseCommand
+  attr_reader :filename, :string
   def initialize(filename,string)
     @filename = filename
     @string = string

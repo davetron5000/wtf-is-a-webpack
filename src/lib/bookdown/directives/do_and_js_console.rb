@@ -1,5 +1,6 @@
 require 'tempfile'
 require_relative 'js_console'
+require_relative 'commands/base_command'
 
 module Bookdown
   module Directives
@@ -20,7 +21,7 @@ module Bookdown
       end
 
       class MakeExecutableCommand < Commands::BaseCommand
-        attr_reader :generated_source
+        attr_reader :generated_source, :code
         def initialize(code,source)
           @code = code
           @source = source

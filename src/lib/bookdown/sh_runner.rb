@@ -8,7 +8,7 @@ module Bookdown
       @logger            = logger
     end
     def run_command
-      @logger.info "Executing #{@command}"
+      @logger.info "Executing '#{@command}'"
       stdout,stderr,status = Open3.capture3(@command)
       command_did_what_was_expected = if @expecting_success
                                         status.success?

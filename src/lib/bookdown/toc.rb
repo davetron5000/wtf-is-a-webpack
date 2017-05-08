@@ -39,18 +39,9 @@ module Bookdown
         @basename ||= "#{@hash["name"]}.md"
       end
 
-      def input_file(basedir)
-        @input_file ||= basedir / basename
-      end
-
       def url
         @url ||= @hash["name"] + ".html"
       end
-
-      def output_file(basedir)
-        @output_file ||= basedir / url
-      end
-
     end
   end
 end

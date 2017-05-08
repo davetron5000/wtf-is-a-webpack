@@ -1,0 +1,12 @@
+* Finish Content
+  * Hot Module Reloading
+  * Wrap-up
+  * Side rant on the overall poor design
+* Styling
+  * Expand/collapse session output
+  * Explicitly highlight changed code
+* Technology
+  * Tests
+  * Downloadable code at each step
+  * Smarter rebuilds
+  * Sidebars as a formal element
