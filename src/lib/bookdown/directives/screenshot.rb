@@ -9,6 +9,7 @@ module Bookdown
         if line =~ /^!SCREENSHOT (\"[^"]+\") (.*)$/
           title = $1
           html,screenshot_image_name,width,height = $2.split(/\s+/)
+          title = title.gsub(/^\"/,'').gsub(/\"$/,'')
           self.new(title,html,screenshot_image_name,width,height,screenshots_dir)
         else
           nil
@@ -23,7 +24,7 @@ module Bookdown
         @width                 = width
         @height                = height
         @screenshots_dir       = screenshots_dir
-        @js_exe                = Pathname("../src/screenshot.js").expand_path
+        @js_exe                = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "screenshot.js").expand_path
       end
 
       def execute

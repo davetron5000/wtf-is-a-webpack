@@ -17,7 +17,7 @@ module Bookdown
 
       def initialize(html_file)
         @html_file = html_file
-        @js_exe = Pathname("../src/dump_console.js").expand_path
+        @js_exe = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "dump_console.js").expand_path
         raise "Cannot find #{@js_exe}" unless @js_exe.exist?
       end
 
