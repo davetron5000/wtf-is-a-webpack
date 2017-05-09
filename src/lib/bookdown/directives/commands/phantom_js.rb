@@ -14,10 +14,13 @@ class Bookdown::Directives::Commands::PhantomJS < Bookdown::Directives::Commands
                                        expecting_success: true,
                                        logger: logger)
     stdout,stderr = sh_runner.run_command
+    stdout = stdout.to_s.strip
+    stderr = stderr.to_s.strip
+    @show_output = @show_output && (stdout != "" || stderr != "")
     if @show_output
       current_output_io.puts "```"
-      current_output_io.puts stdout if stdout.strip != ""
-      current_output_io.puts stderr if stderr.strip != ""
+      current_output_io.puts stdout if stdout != ""
+      current_output_io.puts stderr if stderr != ""
       current_output_io.puts "```"
     end
   end
