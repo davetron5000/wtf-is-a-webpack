@@ -2,6 +2,7 @@ require_relative "base_command"
 require_relative "../../sh_runner"
 
 class Bookdown::Directives::Commands::PhantomJS < Bookdown::Directives::Commands::BaseCommand
+  attr_reader :args
   def initialize(script_file: , args: , show_output: false)
     @script_file = script_file
     @args        = args

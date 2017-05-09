@@ -31,7 +31,7 @@ RSpec.describe Bookdown::Directives::DoAndJsConsole do
         directive.append("source line 2")
         queue = directive.append("!END DO_AND_DUMP_CONSOLE")
         expect(queue).to have_command(
-          described_class::MakeExecutableCommand,
+          Bookdown::Directives::Commands::MakeExecutableCommand,
           code: ["source line 1","source line 2"]
         )
       end

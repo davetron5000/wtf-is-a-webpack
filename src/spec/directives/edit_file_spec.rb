@@ -29,6 +29,13 @@ RSpec.describe Bookdown::Directives::EditFile do
         expect(directive).to be_nil
       end
     end
+    context "without the comment delimiters" do
+      it "blows up" do
+        expect {
+          described_class.recognize("!EDIT_FILE blah.html")
+        }.to raise_error(/EDIT_FILE requires two or three args/)
+      end
+    end
   end
   describe "#execute" do
     it "returns nothing" do

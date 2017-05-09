@@ -43,7 +43,9 @@ RSpec.describe Bookdown::Directives::CreateFile do
   describe "#execute" do
     subject(:directive) { described_class.new("/tmp/blah/foo.html",[]) }
     it "warns if the file exists" do
-      expect(directive.execute).to have_command(described_class::WarnIfFileExists)
+      expect(directive.execute).to have_command(
+        Bookdown::Directives::Commands::WarnIfFileExists
+      )
     end
     it "removes the file if it exists" do
       expect(directive.execute).to have_command(

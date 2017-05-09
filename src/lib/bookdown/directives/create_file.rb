@@ -3,16 +3,18 @@ require_relative "../language"
 require_relative "commands/method_call"
 require_relative "commands/puts_to_file_io"
 require_relative "commands/append_to_file_name"
+require_relative "commands/warn_if_file_exists"
+
 module Bookdown
   module Directives
     class CreateFile
       def self.recognize(line)
         if line =~/^!CREATE_FILE({.*})? (.*)$/
-          filename,options = if $2.nil?
-                                    [$1,[]]
-                                  else
-                                    [$2,$1.to_s.gsub(/[{}]/,'').split(/,/)]
-                                  end
+          filename,options = if $1.nil?
+                               [$2,[]]
+                             else
+                               [$2,$1.to_s.gsub(/[{}]/,'').split(/,/)]
+                             end
           self.new(filename,options)
         else
           nil
@@ -27,21 +29,9 @@ module Bookdown
         @continue = true
       end
 
-      class WarnIfFileExists < Commands::BaseCommand
-        def initialize(filename)
-          @filename = filename
-        end
-
-        def execute(_current_output_io,logger)
-          if File.exist?(@filename)
-            logger.warn("File #{@filename} already exists.  Consider using EDIT_FILE")
-          end
-        end
-      end
-
       def execute
         queue = []
-        queue << WarnIfFileExists.new(@filename)
+        queue << Commands::WarnIfFileExists.new(@filename)
         queue << Commands::MethodCall.new($stdout, :puts, "Deleting \"#{@filename}\"")
         queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
         queue << Commands::MethodCall.new($stdout,:puts,"Creating #{@filename.dirname}")

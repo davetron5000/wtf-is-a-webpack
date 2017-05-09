@@ -5,8 +5,8 @@ module Bookdown
     class Sh
       def self.recognize(line)
         if line =~ /^!SH({.*})? (.*)$/
-          command,options = if $2.nil?
-                              [$1,[]]
+          command,options = if $1.nil?
+                              [$2,[]]
                             else
                               [$2,$1.to_s.gsub(/[{}]/,'').split(/,/)]
                             end
@@ -16,6 +16,7 @@ module Bookdown
         end
       end
 
+      attr_reader :command, :options
       def initialize(command,options)
         @command = command
         @options = options

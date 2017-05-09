@@ -18,6 +18,6 @@ RSpec::Matchers.define :have_command do |klass,options|
   end
 
   failure_message do |queue|
-    "Queue was: #{queue.map(&:class).map(&:name).join(',')}"
+    "Queue was: #{queue.inspect}"
   end
 end

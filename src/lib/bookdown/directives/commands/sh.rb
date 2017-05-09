@@ -2,6 +2,7 @@ require_relative "base_command"
 require_relative "../../sh_runner"
 
 class Bookdown::Directives::Commands::Sh < Bookdown::Directives::Commands::BaseCommand
+  attr_reader :command, :expecting_success
   def initialize(command:, expecting_success: true)
     @command           = command
     @expecting_success = expecting_success

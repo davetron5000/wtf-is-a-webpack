@@ -1,6 +1,6 @@
 require "json"
 require_relative "commands/method_call"
-require_relative "commands/write_file"
+require_relative "commands/merge_package_json"
 require_relative "commands/puts_to_file_io"
 
 module Bookdown
@@ -30,13 +30,11 @@ module Bookdown
         if line =~ /^!END PACKAGE_JSON *$/
           queue = []
           @continue = false
-          existing_package_json = JSON.parse(File.read("package.json"))
-          queue << Commands::MethodCall.new($stdout,:puts,"Inserting into package.json:\n#{@package_json}")
           parsed_additions = JSON.parse(@package_json)
-          new_package_json = JSON.pretty_generate(existing_package_json.merge(parsed_additions))
-          queue << Commands::WriteFile.new("package.json",new_package_json)
+          queue << Commands::MethodCall.new($stdout,:puts,"Inserting into package.json:\n#{@package_json}")
+          queue << Commands::MergePackageJSON.new(parsed_additions)
           queue << Commands::PutsToFileIO.new("```json")
-          queue << Commands::PutsToFileIO.new(new_package_json)
+          queue << Commands::PutsToFileIO.new(JSON.pretty_generate(parsed_additions))
           queue << Commands::PutsToFileIO.new("```")
           queue
         else
