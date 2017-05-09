@@ -2,25 +2,17 @@ require "spec_helper"
 require "bookdown/directives/js_console"
 require "pathname"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::JsConsole do
   describe "::recognize" do
-    context "a DUMP_CONSOLE directive" do
-      subject(:directive) {
-        described_class.recognize("!DUMP_CONSOLE blah.html")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename" do
-        expect(directive.html_file).to eq("blah.html")
-      end
+    it "can parse a command" do
+      expect(described_class).to recognize("!DUMP_CONSOLE blah.html", as: {
+        html_file: "blah.html",
+      })
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!EDIT_FILE blah.html")
-        expect(directive).to be_nil
-      end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
   end
   describe "#execute" do

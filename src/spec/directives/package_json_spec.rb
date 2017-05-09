@@ -1,23 +1,16 @@
 require "spec_helper"
 require "bookdown/directives/package_json"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::PackageJson do
   subject(:directive) { described_class.new }
   describe "::recognize" do
-    context "a PACKAGE_JSON directive" do
-      subject(:directive) {
-        described_class.recognize("!PACKAGE_JSON")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
+    it "can parse a command" do
+      expect(described_class).to recognize("!PACKAGE_JSON")
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!EDIT_FILE blah.html")
-        expect(directive).to be_nil
-      end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
   end
   describe "#execute" do

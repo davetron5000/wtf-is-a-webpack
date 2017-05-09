@@ -2,42 +2,24 @@ require "spec_helper"
 require "bookdown/directives/create_file"
 require "pathname"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::CreateFile do
   describe "::recognize" do
-    context "a CREATE_FILE directive with no options" do
-      subject(:directive) {
-        described_class.recognize("!CREATE_FILE blah.html")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename as a Pathname" do
-        expect(directive.filename).to eq(Pathname("blah.html"))
-      end
-      it "parses empty options" do
-        expect(directive.options).to eq([])
-      end
+    it "can parse a command with no options" do
+      expect(described_class).to recognize("!CREATE_FILE blah.html", as: {
+        filename: Pathname("blah.html"),
+        options: []
+      })
     end
-    context "a CREATE_FILE directive with options" do
-      subject(:directive) {
-        described_class.recognize("!CREATE_FILE{foo,bar} blah.html")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename as a Pathname" do
-        expect(directive.filename).to eq(Pathname("blah.html"))
-      end
-      it "parses the options by splitting on a comma" do
-        expect(directive.options).to eq(["foo","bar"])
-      end
+    it "can parse a command with options" do
+      expect(described_class).to recognize("!CREATE_FILE{foo,bar} blah.html", as: {
+        filename: Pathname("blah.html"),
+        options: ["foo","bar"]
+      })
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!EDIT_FILE blah.html")
-        expect(directive).to be_nil
-      end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
   end
   describe "#execute" do

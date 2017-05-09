@@ -1,42 +1,24 @@
 require "spec_helper"
 require "bookdown/directives/sh"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::Sh do
   describe "::recognize" do
-    context "an SH directive with no options" do
-      subject(:directive) {
-        described_class.recognize("!SH ls -ltr")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the command" do
-        expect(directive.command).to eq("ls -ltr")
-      end
-      it "defaults options to []" do
-        expect(directive.options).to eq([])
-      end
+    it "can parse a command with no options" do
+      expect(described_class).to recognize("!SH ls -ltr", as: {
+        command: "ls -ltr",
+        options: []
+      })
     end
-    context "an SH directive with options" do
-      subject(:directive) {
-        described_class.recognize("!SH{foo,bar} ls -ltr")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the command" do
-        expect(directive.command).to eq("ls -ltr")
-      end
-      it "parses the options" do
-        expect(directive.options).to eq(["foo","bar"])
-      end
+    it "can parse a command with options" do
+      expect(described_class).to recognize("!SH{foo,bar} ls -ltr", as: {
+        command: "ls -ltr",
+        options: ["foo","bar"]
+      })
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!EDIT_FILE blah.html")
-        expect(directive).to be_nil
-      end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
   end
   describe "#execute" do

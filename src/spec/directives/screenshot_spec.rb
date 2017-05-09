@@ -1,84 +1,49 @@
 require "spec_helper"
 require "bookdown/directives/screenshot"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::Screenshot do
   subject(:directive) { described_class.new("this is a title", "foo.html","blah.png", "640", "480", "foo") }
   describe "::recognize" do
-    context "a SCREENSHOT directive with title, html file, and image name" do
-      subject(:directive) {
-        described_class.recognize("!SCREENSHOT \"this is a title\" blah.html blah.png","foo")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename" do
-        expect(directive.html_file).to eq("blah.html")
-      end
-      it "parses the image name" do
-        expect(directive.screenshot_image_name).to eq("blah.png")
-      end
-      it "sets a nil width" do
-        expect(directive.width).to be_nil
-      end
-      it "sets a nil height" do
-        expect(directive.height).to be_nil
-      end
-      it "passes through the screenshots dir" do
-        expect(directive.screenshots_dir).to eq("foo")
-      end
+    it "can parse a command with no options" do
+      expect(described_class).to recognize(
+        "!SCREENSHOT \"this is a title\" blah.html blah.png","foo",
+        as: {
+          title: "this is a title",
+          html_file: "blah.html",
+          screenshot_image_name: "blah.png",
+          width: nil,
+          height: nil,
+          screenshots_dir: "foo"
+        })
     end
-    context "a SCREENSHOT directive with title, html file, image name, and width" do
-      subject(:directive) {
-        described_class.recognize("!SCREENSHOT \"this is a title\" blah.html blah.png 640","foo")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename" do
-        expect(directive.html_file).to eq("blah.html")
-      end
-      it "parses the image name" do
-        expect(directive.screenshot_image_name).to eq("blah.png")
-      end
-      it "sets the width" do
-        expect(directive.width).to eq("640")
-      end
-      it "sets a nil height" do
-        expect(directive.height).to be_nil
-      end
-      it "passes through the screenshots dir" do
-        expect(directive.screenshots_dir).to eq("foo")
-      end
+    it "can parse a command with a width" do
+      expect(described_class).to recognize(
+        "!SCREENSHOT \"this is a title\" blah.html blah.png 640","foo",
+        as: {
+          title: "this is a title",
+          html_file: "blah.html",
+          screenshot_image_name: "blah.png",
+          width: "640",
+          height: nil,
+          screenshots_dir: "foo"
+        })
     end
-    context "a SCREENSHOT directive with title, html file, image name, width, and height" do
-      subject(:directive) {
-        described_class.recognize("!SCREENSHOT \"this is a title\" blah.html blah.png 640 480","foo")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename" do
-        expect(directive.html_file).to eq("blah.html")
-      end
-      it "parses the image name" do
-        expect(directive.screenshot_image_name).to eq("blah.png")
-      end
-      it "sets the width" do
-        expect(directive.width).to eq("640")
-      end
-      it "sets the height" do
-        expect(directive.height).to eq("480")
-      end
-      it "passes through the screenshots dir" do
-        expect(directive.screenshots_dir).to eq("foo")
-      end
+    it "can parse a command with a width and height" do
+      expect(described_class).to recognize(
+        "!SCREENSHOT \"this is a title\" blah.html blah.png 640 480","foo",
+        as: {
+          title: "this is a title",
+          html_file: "blah.html",
+          screenshot_image_name: "blah.png",
+          width: "640",
+          height: "480",
+          screenshots_dir: "foo"
+        })
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!EDIT_FILE blah.html","foo")
-        expect(directive).to be_nil
-      end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
   end
   describe "#execute" do

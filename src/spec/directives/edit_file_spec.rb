@@ -2,32 +2,27 @@ require "spec_helper"
 require "bookdown/directives/edit_file"
 require "pathname"
 require_relative "../support/matchers/have_command"
+require_relative "../support/matchers/recognize"
 
 RSpec.describe Bookdown::Directives::EditFile do
   subject(:directive) { described_class.new("/tmp/blah/foo.html","<!--","-->") }
   describe "::recognize" do
-    context "a EDIT_FILE directive with no options" do
-      subject(:directive) {
-        described_class.recognize("!EDIT_FILE blah.html <!-- -->")
-      }
-      it "initializes a #{described_class}" do
-        expect(directive.class).to eq(described_class)
-      end
-      it "parses the filename as a Pathname" do
-        expect(directive.filename).to eq(Pathname("blah.html"))
-      end
-      it "parses the starting comment" do
-        expect(directive.start_comment).to eq("<!--")
-      end
-      it "parses the end comment" do
-        expect(directive.end_comment).to eq("-->")
-      end
+    it "can parse a command with start comment" do
+      expect(described_class).to recognize("!EDIT_FILE blah.html #", as: {
+        filename: Pathname("blah.html"),
+        start_comment: "#",
+        end_comment: nil
+      })
     end
-    context "another directive" do
-      it "does not create a new #{described_class}" do
-        directive = described_class.recognize("!FOO_FILE blah.html")
-        expect(directive).to be_nil
-      end
+    it "can parse a command with start and end comments" do
+      expect(described_class).to recognize("!EDIT_FILE blah.html <!-- -->", as: {
+        filename: Pathname("blah.html"),
+        start_comment: "<!--",
+        end_comment: "-->"
+      })
+    end
+    it "ignores other directives" do
+      expect(described_class).not_to recognize("!BLAH")
     end
     context "without the comment delimiters" do
       it "blows up" do
