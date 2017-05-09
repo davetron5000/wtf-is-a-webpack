@@ -18,6 +18,7 @@ module Bookdown
         @package_json = ""
         @continue = true
       end
+
       def execute
         []
       end

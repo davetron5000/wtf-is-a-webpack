@@ -2,8 +2,12 @@ require "spec_helper"
 require "bookdown/directives/sh"
 require_relative "../support/matchers/have_command"
 require_relative "../support/matchers/recognize"
+require_relative "../support/matchers/be_single_line_directive"
 
 RSpec.describe Bookdown::Directives::Sh do
+
+  specify { expect(described_class.new("ls",[])).to be_single_line_directive }
+
   describe "::recognize" do
     it "can parse a command with no options" do
       expect(described_class).to recognize("!SH ls -ltr", as: {

@@ -2,9 +2,13 @@ require "spec_helper"
 require "bookdown/directives/screenshot"
 require_relative "../support/matchers/have_command"
 require_relative "../support/matchers/recognize"
+require_relative "../support/matchers/be_single_line_directive"
 
 RSpec.describe Bookdown::Directives::Screenshot do
   subject(:directive) { described_class.new("this is a title", "foo.html","blah.png", "640", "480", "foo") }
+
+  specify { expect(directive).to be_single_line_directive }
+
   describe "::recognize" do
     it "can parse a command with no options" do
       expect(described_class).to recognize(

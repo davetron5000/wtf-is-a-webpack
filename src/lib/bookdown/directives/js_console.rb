@@ -1,9 +1,12 @@
 require "pathname"
+require_relative "single_line_directive"
 require_relative "commands/phantom_js"
 
 module Bookdown
   module Directives
     class JsConsole
+      include SingleLineDirective
+
       def self.recognize(line)
         if line =~ /^!DUMP_CONSOLE (.*)$/
           html_file = $1
@@ -17,7 +20,7 @@ module Bookdown
 
       def initialize(html_file)
         @html_file = html_file
-        @js_exe = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "dump_console.js").expand_path
+        @js_exe = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "js" / "dump_console.js").expand_path
         raise "Cannot find #{@js_exe}" unless @js_exe.exist?
       end
 

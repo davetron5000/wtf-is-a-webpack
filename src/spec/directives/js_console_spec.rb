@@ -3,8 +3,10 @@ require "bookdown/directives/js_console"
 require "pathname"
 require_relative "../support/matchers/have_command"
 require_relative "../support/matchers/recognize"
+require_relative "../support/matchers/be_single_line_directive"
 
 RSpec.describe Bookdown::Directives::JsConsole do
+  specify { expect(described_class.new("blah.html")).to be_single_line_directive }
   describe "::recognize" do
     it "can parse a command" do
       expect(described_class).to recognize("!DUMP_CONSOLE blah.html", as: {

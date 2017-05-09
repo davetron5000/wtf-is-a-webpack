@@ -1,8 +1,11 @@
+require_relative "single_line_directive"
 require_relative "commands/sh"
 
 module Bookdown
   module Directives
     class Sh
+      include SingleLineDirective
+
       def self.recognize(line)
         if line =~ /^!SH({.*})? (.*)$/
           command,options = if $1.nil?

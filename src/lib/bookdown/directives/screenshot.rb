@@ -1,10 +1,13 @@
 require_relative "screenshot"
+require_relative "single_line_directive"
 require_relative "commands/phantom_js"
 require_relative "commands/puts_to_file_io"
 
 module Bookdown
   module Directives
     class Screenshot
+      include SingleLineDirective
+
       def self.recognize(line,screenshots_dir)
         if line =~ /^!SCREENSHOT (\"[^"]+\") (.*)$/
           title = $1
@@ -24,7 +27,7 @@ module Bookdown
         @width                 = width
         @height                = height
         @screenshots_dir       = screenshots_dir
-        @js_exe                = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "screenshot.js").expand_path
+        @js_exe                = (Pathname(__FILE__).dirname / ".." / ".." / ".." / "js" / "screenshot.js").expand_path
       end
 
       def execute
