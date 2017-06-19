@@ -1,8 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    docile (1.1.5)
+    json (2.1.0)
     redcarpet (3.4.0)
     sass (3.4.23)
+    simplecov (0.14.1)
+      docile (~> 1.1.0)
+      json (>= 1.8, < 3)
+      simplecov-html (~> 0.10.0)
+    simplecov-html (0.10.1)
 
 PLATFORMS
   ruby
@@ -10,6 +17,7 @@ PLATFORMS
 DEPENDENCIES
   redcarpet
   sass
+  simplecov
 
 BUNDLED WITH
    1.14.6

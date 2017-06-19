@@ -12,11 +12,11 @@ module Bookdown
                   :site_dir
 
     def initialize(src_dir: ,
-          static_images_dir: ,
-               markdown_dir: ,
-                   work_dir: ,
-        parsed_markdown_dir: ,
-                   site_dir: )
+         static_images_dir: ,
+              markdown_dir: ,
+                  work_dir: ,
+       parsed_markdown_dir: ,
+                  site_dir: )
 
       src_dir              = Pathname(src_dir)
       @scss_dir            = src_dir / "scss"

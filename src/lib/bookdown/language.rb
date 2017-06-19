@@ -9,8 +9,10 @@ module Bookdown
                     "html"
                   elsif filename.extname == ".css"
                     "css"
+                  elsif filename.extname == ".json"
+                    "json"
                   else
-                    raise "Can't determine language for #{filename}"
+                    raise "Can't determine language for #{filename} (extension '#{filename.extname}')"
                   end
     end
 

@@ -10,14 +10,16 @@ fix what we broke first.
 
 ## Making Development Easy Without Breaking Production
 
-The most basic requirement we have for development is to be able to run our app locally.  Just call me Captain Obvious.  We cannot run our app locally in its current state, but restoring it to the pre-production state means we can't go to production.  A common way to solve this is to branch our code or our configuration, based on the what environment we are either running in, or building for.
+The most basic requirement we have for development is to be able to run our app locally.  Just call me Captain Obvious.  We cannot run our app locally in its current state, but restoring it to the pre-production state means we can't go to production.  A common way to solve this is to branch our code or our configuration, based on what environment we are either running in, or building for.
+
+<aside class="pullquote">Every difference between production and development is a chance for bugs to crop up</aside>
 
 Every difference between production and development is a chance for bugs to crop up, so we want to keep the differences minimal
 and share as much configuration as we can. In any case, make sure you have a way to easily check your production app to see that
 it's correct and working.  Webpack cannot do that for you.
 
 A common way to have alternate behavior or configuration in production is to observe an environment variable that your code can
-use to figure out what environment it's in.  In Node/JavaScript land, that variable is `NODE_ENV` and in JavaScript, you
+use to figure out what environment it's in or being built for.  In Node/JavaScript land, that variable is `NODE_ENV` and in JavaScript, you
 typically access it via `process.env.NODE_ENV`.
 
 If it's `"production"`, we do one thing, if it's `"development"`, we do another.
@@ -86,6 +88,10 @@ With that in place, we can modify our `scripts` section to use this new value:
   }
 }
 !END PACKAGE_JSON
+
+Our entire `package.json` looks like so:
+
+!SH cat package.json
 
 Now, `yarn webpack` works as before, but `yarn prod` will generate our production bundle:
 

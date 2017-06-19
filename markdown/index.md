@@ -1,19 +1,20 @@
 This site explains Webpack, but it also explains so much more.  It's a journey from nothing to developing, testing,
-and deploying a basic website, all designed to minimally use tools in the horrendous JavaScript ecosystem.
+and deploying a basic website, all designed around minimal use of the tools in the horrendous JavaScript ecosystem.
 
 I am not someone that accepts blobs of JSON as explanations for how things work.  I need to _really understand_ how
 the tools I'm using work, and **why** we have to configure them the way we do.  The JavaScript ecosystem is rife
-with Medium tutorials and out-of-date blog posts that assault you with giant blobs of JSON, filled with
-unnecessary configuration options and requiting not-actually-required tools.
+with Medium tutorials and out-of-date blog posts that assault you with massive amounts of unnecessary configuration options
+that require tools and libraries that you don't actually need—at least not without a good reason.  They also overemphasize
+flexibility and choice, and undervalue the happy path to actually working on your problem.
 
 By the end of this mini-site/book/whatever, you *will* be using a fair number of tools, and your configuration will
 be somewhat complex.  But, you'll know exactly why each tool was brought in and why each line of configuration had
 to be written.  There will be very little handwaving.
 
 This means deep-dives and sidetracks, but you'll learn a lot about why Webpack exists, what it's for and how it
-interacts with the various its of the JavaScript ecosystem.
+interacts with the various parts of the JavaScript ecosystem.
 
-I've written this from my personal point of view, which is to say an experienced developer who is curious, can understand reasonable things, isn't an expert in the JavaScript ecosystem, but above-all wants a predictable, modern, proffesional, hassle-free developer experience, no matter what.
+I've written this from my personal point of view, which is to say an experienced developer who is curious, can understand reasonable things, isn't an expert in the JavaScript ecosystem, but above-all wants a predictable, modern, professional, hassle-free developer experience, no matter what.
 
 ## What you Need
 

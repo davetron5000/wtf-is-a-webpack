@@ -15,7 +15,7 @@ RSpec.describe Bookdown::Language do
     it "blows up if it can't figure out the language" do
       expect {
         described_class.new("blah.ex")
-      }.to raise_error("Can't determine language for blah.ex")
+      }.to raise_error(/Can't determine language for blah.ex/)
     end
   end
 end

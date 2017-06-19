@@ -1,8 +1,6 @@
 We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a language that doesn't suport literally any of that in any way.  Thank  God for Webpack!
 
-But.
-
-We need go to production.  Code that's not live and solving user problems might as well not exist.
+But, we need to go to production.  Code that's not live and solving user problems might as well not exist.
 
 Given that our amazing Markdown previewer totally works statically in a browser on localhost, it's just a matter of dumping files up onto some server, right?
 
@@ -18,10 +16,8 @@ Why?
 
 Our Markdown app is small now, but it could become the world's foremost way of rendering markdown in a browser.  We've got VC's knocking at our door, and we need to be web scale.
 
-In all seriousness, uncompressed assets like JavaScript waste bandwidth.  The downstream user doesn't care about whitespace or
-code comments, and we don't need to pay for bandwidth that's ferrying bytes that won't be used.  There's literally no reason to
-send uncompressed JavaScript to a user other than laziness (or, in our case, the lack of wherewithal to configure our awful
-toolchain to do it as part of our build pipeline).
+Uncompressed assets like JavaScript waste bandwidth.  The downstream user doesn't care about whitespace or
+code comments, and we don't need to pay for bandwidth that's ferrying bytes that won't be used.  There's literally no reason to send uncompressed JavaScript to a user other than laziness (or, in our case, the lack of wherewithal to configure our awful toolchain to do it as part of our build pipeline).
 
 If you aren't exactly sure what I mean, consider that this JavaScript works the same way as our existing `markdownPreviewer.js`:
 
@@ -35,11 +31,9 @@ q.innerHTML=m.toHTML(t);
 e.preventDefault();};}
 ```
 
-This takes up less space than our version, but is terrible code.  We can use tools to turn our nice code into crappy but small
-code that works the same way.
+This takes up less space than our version, but is terrible code.  We can use tools to turn our nice code into crappy but small code that works the same way.
 
-This, plus the use of a content-delivery network will make our application performant and fast without a ton of effort.  To use a
-CDN, however, we need to be mindful about how we manage changes.
+This, plus the use of a content-delivery network will make our application performant and fast without a ton of effort.  To use a CDN, however, we need to be mindful about how we manage changes.
 
 ## Unique Names for Each Version of our `bundle.js`
 
@@ -47,82 +41,42 @@ If we deployed our code to a content delivery network (which we are likely going
 
 So, we want to generate a file like `924giuwergoihq3rofdfg-bundle.js`, where `924giuwergoihq3rofdfg` changes each time our code changes.
 
-This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to
-be able to do this for us.  Turns out, it can.
+This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to be able to do this for us.  Turns out, it can.
 
-## Plugins and Loaders
+## Something Automatic!
 
-Webpack is built on four basic concepts.  We've already discussed two of them: _entry points_ and _output_.  The other two are
-_plugins_ and _loaders_, which affect Webpack's behavior in turning our entry points into outputs.
+Accoring to [Webpack's documentation](https://webpack.js.org/guides/production/), merely using the `-p`
+option when invoking it will perform minification!  Wow!  Let's see if that's true.
 
-What we want to do is configure how Webpack produces `bundle.js`.  Reading about loaders leads us to believe they are a feature used to manipulate the entry points to Webpack, not the output (though this isn't technically true, it's true enough for now).
-
-_Plugins_, on the other hand, seem generally flexible and, according to the documentation:
-
-> perform… actions and custom functionality on “compilations” or “chunks” of your bundled modules
-
-That sounds about right.  Going to the [plugins page](https://webpack.js.org/plugins/) on Webpack's website yields a few interesting things, namely `CompressionWebpackPlugin` and `HtmlWebpackPlugin`.  Nothing specifically about minification or hashing.
-
-This is disappointing, because minification and hashing are pretty basic needs and Webpack is an all-inclusive system, or at
-least designed to be.
-
-Fortunately, I know that Uglify is a method of minifying JavaScript and a search for Uglify and Webpack yields what we want: the
-[uglifyjs-webpack-plugin][uglify-webpack]
-
-[uglify-webpack]: https://github.com/webpack-contrib/uglifyjs-webpack-plugin
-
-And, **of course** the `uglifyjs-webpack-plugin` doesn't have a dependency on `uglify-js`, so we have to install both explicitly:
-
-!SH yarn add uglify-js uglifyjs-webpack-plugin
-
-And yes, they use different naming schemes, for reasons that give me pause as to the care taken in their implementations, but
-whatever.  It will work.
-
-Before setting it up, let's record the size of our bundle:
-
-!SH wc -c dist/bundle.js
-
-Now, we'll add a new `plugins:` key to `webpack.config.js` and create a new `UglifyJSPlugin` as well.  Our
-entire configuration should look like so:
-
-!EDIT_FILE webpack.config.js /* */
-{
-  "match": "const path",
-  "insert_after": [
-    "const UglifyJSPlugin = require('uglifyjs-webpack-plugin');"
-  ]
-},
-{
-  "match": "  }",
-  "replace_with": [
-    "  },",
-    "  plugins: [",
-    "    new UglifyJSPlugin()",
-    "  ]"
-  ]
-}
-!END EDIT_FILE
-
-Now, we can re-run Webpack:
+First, let's see how big the bundle is:
 
 !SH yarn webpack
-
-This should work, and our file size should be *way* smaller:
-
 !SH wc -c dist/bundle.js
 
-Nice!  If you open up `dist/index.html`, you should still the app working as before, but with almost a _third_ of
-the filesize.  Feel the bandwidth savings!
+Now, let's try `-p`.  To make sure Yarn doesn't think we're passing **it** `-p`, we use the UNIX special
+switch that means “stop parsing command-line switches”, which is `--`:
 
-Now, what about hashing the value?  There's actually two problems we have to deal with.  First is how to generate
-the hash and use that as our filename.  The second is that we're bringing in `bundle.js` in our HTML file, and if
-we have an ever-changing hash name, we'll need to change that and be able to easily keep it up to date.
+!SH yarn webpack -- -p
+!SH wc -c dist/bundle.js
 
-Given the resources we've seen, there's no obvious way to do either of these things.  Let's return to the docs for
-the `output:` key. Since that is where we've configured the name of our bundle, perhaps there's an option to help
-us with the hash there?
+Not bad!  One third the final size.  And without any configuration!
 
-Turns out, there is.  The value you give to `filename:` isn't just a string.  It's mini configuration-within-a-configuration that, fortunately, can achieve our goals.  According to the docs, we can use the magic string `"[chunkhash]"`.  Let's try it.
+So, what did `-p` *actually* do?
+
+It configures the `UglifyJsPlugin`, which uses [UglifyJS](http://lisperator.net/uglifyjs/) to minify our
+code.  It also sets the `NODE_ENV` environment variable to "production", which allows us to configure
+things only for production if we want.  And we will want.
+
+Now, we need to create a hashed bundle to deal with a CDN.  Webpack calls this _caching_.
+
+## Creating a bundle that can be long-term cached on a CDN
+
+Creating a hashed filename is called [caching](https://webpack.js.org/guides/caching/), since the filename
+allows us to put the bundle in a long-term cache.  Instead of having some sort of plugin to do this, it
+turns out the the value of the string we give to the `filename` key of `output` isn't just an ordinary
+string!  It's a second configuration format (yay) that allows us to put a hashed value into the filename.
+
+We can set the value to `"[chunkhash]-bundle.js"`, like so:
 
 !EDIT_FILE webpack.config.js /* */
 {
@@ -133,21 +87,182 @@ Turns out, there is.  The value you give to `filename:` isn't just a string.  It
 }
 !END EDIT_FILE
 
-Sure enough, this works:
+And, it works!
 
 !SH yarn webpack
 !SH ls dist
 
-OK, so how do we get that into our HTML file?  Remember `HtmlWebpackPlugin` from before?  That's how.
+This creates two new problems, however.  First, since the filename will now change whenever our code changes, we can't put a static reference to it into our `index.html` file.  The second problem, though, is that we don't want to do this step in development (note that we got a hashed filename without using the `-p` options).  Webpack's documentation warns us:
 
-Let's install that plugin with Yarn:
+> Don’t use `[chunkhash]` in development since this will increase compilation time.
+
+If you recall above, we mentioned that the `-p` option sets the value of `NODE_ENV` to "production".  You
+should have every reason to believe that you can access that value inside your Webpack configuration to
+create conditional, production-only configuration like so:
+
+```javascript
+output: {
+  path: path.resolve(__dirname, "dist"),
+  filename: process.env.NODE_ENV === "production" ? "[chunkhash]-bundle.js" : "bundle.js"
+}
+```
+
+Sadly, you would be wrong.
+
+The `-p` flag doesn't actually set an environment variable.  What it really does is to instruct Webpack to
+replace code that looks like `process.env.NODE_ENV` _in the code Webpack is bundling_ with the value `"production"`, but **not in `webpack.config.js`**.  Sigh.
+
+If you want to read a long an annoying tale of why this is, please check out [this Webpack issue](https://github.com/webpack/webpack/issues/2537).  Spoiler: there is no solution at the end.
+
+Although it's nice that `-p` exists to do *something* for us for a production build, it's clearly
+insufficient.  We've only come to our _second_ production requirement and it won't work.
+
+If you read the docs more, it's clear where this is going - we need one configuration for dev and one for
+production.  This is not uncommon amongst web application development tools, however it would nice if
+Wepack just supported this directly, since `-p` is essentially unusable for any real project (if it doesn't work for a 10-line markdown processor, it doesn't work).
+
+The good news is, after we set this up, configuring stuff for dev vs. prod will be much simpler.
+
+The trick is to figure out how to avoid duplicating common configuration.  Webpack sort-of supports this
+via the [webpack-merge](https://github.com/survivejs/webpack-merge) module, which can smartly merge two
+Webpack configurations.
+
+So, we'll need to create a common base configuration, and then one for dev-only and another for prod-only,
+merging the proper one at compile time.
+
+### Separating Production and Development Configuration
+
+The way this works is that our main `webpack.config.js` will simply `require` an environment-specific
+webpack configuration.  Those environment-specific ones will pull in a common Webpack configuration, then
+using the `webpack-merge` module, overwrite or augment anything needed specific to those environments.
+
+Our general requirements at this point are:
+
+* No minifcation or hashing in development
+* Minify **and** hash in production
+* Output development files in a different location than production files (so we don't get confused about what's what).
+* Avoid duplicatng coniguration if at-all possible.
+
+Since we don't have much configuration now, this shouldn't be a problem.
+
+First, install webpack-merge:
+
+!SH yarn add webpack-merge
+
+Now, to create our _four_ configuration files.  I'm willing to tolerate one configuration file at the
+top-level, but not four.  So, we'll be putting the dev, production, and common in a new directory, called
+`webpack`:
+
+!SH mkdir -p webpack
+
+Our top-level `webpack.config.js` will reference the environment-specific file in `webpack`:
+
+!CREATE_FILE webpack.config.js
+module.exports = function(env) {
+  if (env === undefined) {
+    env = "dev"
+  }
+  return require(`./webpack/${env}.js`)
+}
+!END CREATE_FILE
+
+Where does that `env` come from?  It comes from us.  We'll need to pass `--env=dev` or `--env=production`
+to webpack to tell it which env we're building for.  This is why we've defaulted it to `dev` so we don't have to type that nonsense every time.  The whole "environment for building" vs "runtime environment" is
+confusing and arbitrary, but this is how it is.
+
+Next, we'll create `webpack/dev.js`.
+
+This file will suck in a common Webpack config, and modify it for development.  This will look very similar
+to our original `bundle.js`, but our output path is going to be `dev` instead of `dist`, so we don't get
+confused about what files are what.
+
+Also remember that since this file is in `webpack/` and we want to put files in `dev/` (not `webpack/dev`), we have to use `../dev`.
+
+!CREATE_FILE webpack/dev.js
+const path         = require('path');
+const Merge        = require('webpack-merge');
+const CommonConfig = require('./common.js');
+
+module.exports = Merge(CommonConfig, {
+  output: {
+    path: path.join(__dirname, '../dev'),
+    filename: 'bundle.js'
+  }
+});
+!END CREATE_FILE
+
+Now, we'll create our production configuration in `webpack/production.js`:
+
+!CREATE_FILE webpack/production.js
+const path         = require('path');
+const Merge        = require('webpack-merge');
+const CommonConfig = require('./common.js');
+
+module.exports = Merge(CommonConfig, {
+  output: {
+    path: path.join(__dirname, '../production'),
+    filename: '[chunkhash]-bundle.js'
+  }
+});
+!END CREATE_FILE
+
+Both files reference `common.js`, we create that next:
+
+!CREATE_FILE webpack/common.js
+module.exports = {
+  entry: './js/index.js'
+};
+!END CREATE_FILE
+
+One confusing thing that is confusing must be pointed out.  All of our calls to `require` use a path
+_relative to the file `require` is called from_.  Further, when we call `path.join(__dirname,
+    "../production")`, the `../` is because this call, too, is executed relative to the file it's executed
+in.  **But**, our entry point is _relative to where Webpack is executed from_, which is to say, the root
+directory.
+
+
+Let that sink in.  As an exercise for later, decide for yourself if any of this is an example of a good
+design decision.  Perhaps it's my fault for insisting I tuck away these silly files in `webpack/`, but I
+find all of this unnecessarily arbitrary and confusing.
+
+Anyway, we should be able to run webpack as  before:
+
+!SH yarn webpack
+
+This places our bundle in `dev`, so we'll need to move our HTML file there:
+
+!SH cp dist/index.html dev/index.html
+
+And now, our app should work as before.
+
+!SCREENSHOT "Our app still works" dev/index.html still_working.png
+
+Next, we can build for production:
+
+!SH yarn webpack -- --env=production -p
+
+!SH ls production
+
+Which brings us to our second problem to solve (remember, this was just the _first_ one!), which is how
+do we get our `index.html` to reference the file we just built.
+
+### Accessing the Hashed Filename in our HTML
+
+So far, our app doesn't need a server to do anything, but we now need something dynamic.  Rather than go
+through *that* pain, let's hold what we've got, and get the generated filename into our HTML.
+
+In the previous section, we copied our HTML around, and that's not good.  We're building a build system
+here, and it shouldn't include us typing `cp`!
+
+What we want is to treat our `index.html` as a rudimentary template, and include a reference to our bundle
+in there at build time.  The [HtmlWebpackPlugin](https://github.com/jantimon/html-webpack-plugin) was
+designed to do this!
+
+First, install it:
 
 !SH yarn add html-webpack-plugin
 
-By default, this plugin will produce an `index.html` file that brings in our bundle.  Since we have particular
-markup that we need for our app, we need a way to specify that.  `HtmlWebpackPlugin` allows us to specify a
-template to use and, if it's just straight-up normal HTML, the plugin will insert the `<script>` tag in the right
-place.
+By default, this plugin will produce an `index.html` file that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify that.  `HtmlWebpackPlugin` allows us to specify a template to use and, if it's just straight-up normal HTML, the plugin will insert the `<script>` tag in the right place.
 
 Let's place that file in a new directory called `html`.  Note that we've omitted the `<script>` tag we had before.
 
@@ -170,74 +285,86 @@ Let's place that file in a new directory called `html`.  Note that we've omitted
 </html>
 !END CREATE_FILE
 
-Now, we'll bring in the new plugin and configure it.  Here's our entire configuration file:
+Now, we'll bring in the new plugin and configure it.  This is common to both production and development, so
+we'll put this in `webpack/common.js`:
 
-!EDIT_FILE webpack.config.js /* */
+!EDIT_FILE webpack/common.js /* */
 {
-  "match": "const UglifyJSPlugin",
-  "insert_after": [
-    "const HtmlPlugin     = require('html-webpack-plugin');"
-  ]
-},
-{
-  "match": "    new UglifyJSPlugin",
+  "match": "module.exports = ",
   "replace_with": [
-    "    new UglifyJSPlugin(),",
+    "const HtmlPlugin     = require('html-webpack-plugin');",
+    "",
+    "module.exports = {",
+    "  plugins: [",
     "    new HtmlPlugin({",
-    "      template: \"html/index.html\"",
-    "    }),"
+    "      template: \"./html/index.html\"",
+    "    })",
+    "  ],"
   ]
 }
 !END EDIT_FILE
 
-Now, when we `yarn webpack`, our HTML file should be generated for us:
+Note again the arbitrary  nature of relative paths.  The `template` will be accessed from the directory
+where we run Webpack, so it's just `./html`, and **not** `../html`.
+
+Let's clean out the existing `dev` directory so we can be sure we did what we think we did:
+
+!SH rm dev/*.*
+
+Now, run Webpack
 
 !SH yarn webpack
 
-That works and our `dist/index.html` now references our hashed filename:
+If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag:
 
-!SH cat dist/index.html
+!SH cat dev/index.html
+
+**And**, if you run this for production, it works as we'd like!
+
+!SH yarn webpack -- -p --env=production
+!SH cat production/index.html
 
 Nice!
 
-What this means is that we can take the contents of `dist`, place it on our web server and serve it up. It also means that we now have the mechanism by which we can serve our JavaScript from a CDN and not worry about cache-busting or any of that.
+As a final step, let's modify `package.json` to handle the production build.
 
-But wait, we aren't referencing our CDN or don't see how to.  How *would* we do that?
+## Scripting the Production Build
 
-99% of the time, you would not be having Webpack generate your HTML for you, but there's no reason Webpack can't handle this simple case for us.
+Doing this the way we've seen will result in duplicating the command-line arguments common to webpack, so let's set that in [config section](https://docs.npmjs.com/files/package.json#config) of `package.json`.
 
-If you dig into the documentation for html-webpack-templates, you'll find an [example template](https://github.com/jaketrent/html-webpack-template/blob/86f285d5c790a6c15263f5cc50fd666d51f974fd/index.html) that demonstrates how to make our `index.html` *actually* a template.  You'll also see that there's a configuration option called `inject` that we can set to false to prevent the plugin from automatically inserting `<script>` tag.
-
-Let's set that option in `webpack.config.js`:
-
-!EDIT_FILE webpack.config.js /* */
+!PACKAGE_JSON
 {
-  "match": "      template: ",
-  "replace_with": [
-    "      inject: false,",
-    "      template: \"html/index.html\""
-  ]
+  "config": {
+    "webpack_args": " --config webpack.config.js --display-error-details"
+  }
 }
-!END EDIT_FILE
+!END PACKAGE_JSON
 
-We can now use [EJS](http://www.embeddedjs.com) in our `html/index.html` to pull out the file.  It's a bit weird because Webpack supports mulitple output files (which it called _chunks_) so we have to iterate over those, even though in our case it's just one file.
+Now, we can reference this configuration var by prefixing it with `$npm_package_config_` and save precious
+keystrokes:
 
-!EDIT_FILE html/index.html <!-- -->
+!PACKAGE_JSON
 {
-  "match": "    </section>",
-  "insert_after": [
-    "    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>",
-    "      <script src=\"//cdn.awesome/<%= htmlWebpackPlugin.files.chunks[chunk].entry %>\"></script>",
-    "    <% } %>"
-  ]
+  "scripts": {
+    "webpack": "$(yarn bin)/webpack $npm_package_config_webpack_args",
+    "prod": "$(yarn bin)/webpack  $npm_package_config_webpack_args -p --env=production",
+    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run"
+  }
 }
-!END EDIT_FILE
+!END PACKAGE_JSON
 
-When we run `yarn webpack`, it all works and you can see that it properly uses our CDN to serve the file.
+And with that:
 
-!SH yarn webpack
+!SH yarn prod
 
-Of course, this creates a *new* problem.  We can't develop locally without getting that file up to our CDN.  That's
-not acceptable.
+(Note that we can't use "production" because it has some special meaning that generates an error that says
+"no command specified" rather than, you know, telling us we can't use the reserved word "production")
 
-That leads us to the next thing to tackle - improving our development environment.
+The good thing about putting this in `"scripts"` , other than scripting away tedious stuff to have to type, is that we now have one command that means "make production happen".  As our application evolves, we can add more features behind the `prod` command.
+
+This was a bit of a slog, but we now have a decent project structure, and can do useful and basic things
+for development.
+
+There's still room for improvement, but before we look at stuff like debugging and general ergonomics, we
+should look at how to handle CSS, because our Markdown previewer really could use some pizazz, and the only
+way to do that is CSS.

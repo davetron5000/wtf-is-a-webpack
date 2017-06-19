@@ -21,16 +21,16 @@
       "title": "Going to Production"
     },
     {
-      "name": "development_environment",
-      "title": "A Workable Development Environment"
-    },
-    {
       "name": "css",
       "title": "Wrangling CSS, too"
     },
     {
       "name": "sourcemaps",
       "title": "Stack Traces and Line Numbers that Make Sense"
+    },
+    {
+      "name": "dev_server",
+      "title": "Auto-reload Code When You Change It"
     }
   ]
 }

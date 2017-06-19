@@ -4,8 +4,14 @@ find out.
 I find the configuration of Webpack hard to understand and derive.  I find the general concept of Webpack very
 difficult to grasp, especially when reading the myriad blogs documenting the way to set it up—they are all different!
 
-I prefer tools to come with defaults that make sense and that guide me to make good decisions if I don't have strong opinions.
-Webpack does none of that, but this is a cultural issue with the JavaScript ecosystem.
+The source of this is that Webpack is a monolithic system that does many unrelated things in an opaque way, while also being
+designed around extreme flexibility.  Unlike a monolithic system such as Ruby on Rails, nothing in  Webpack “just works”—you
+have to configure even basic things.
+
+This is part of JavaScript's culture—each new problem in your development environment is viewed as a chance to invent a
+solution from first principles and no particular opinion on this is viewed as canonical or idiomatic.  This means we'll be
+spending a lot of time in documentation and a lot of time making decisions that have nothing to do with our users or the
+problems we're trying to solve for them.
 
 So, let's figure out what even is a Webpack together by starting from nothing.  You'll be amazed at how little JSON you need to
 throw at this problem, Medium blog posts be damned!
@@ -58,9 +64,22 @@ browser supports the latest version of JavaScript.  And no browser ever will (si
 moving target).
 
 [spec]: http://www.ecma-international.org/ecma-262/6.0/#sec-modules
+<aside class="sidebar">
+<h1>But, but JavaScript <em>does</em> support that feature!</h1>
+<p>
+Because the JavaScript ecosystem can't even agree on the name of the language or how its versions are to be referred to,
+throughout this book, I'll be using the word “JavaScript” to mean “the version of javaScript that runs in all
+reasonable browsers”.  I realize this definition if vague and changes over time.
+</p>
+<p>
+The main point is that there will <em>always</em> be a newer version of JavaScript than what works in a browser, so as a
+developer, it's in your best interest to simply accept this fact, and plan your development workflow such that the language
+you write will not be directly sent to a browser.  Call the former what you will, but the latter is called “JavaScript”.
+</p>
+</aside>
 
 Webpack implements a module system as well as a way to translate JavaScript code that doesn't work in any web browser to
-JavaScript code that works in most web browsers.  It's kindof like a C compiler.
+JavaScript code that works in most web browsers.  It's like a C compiler.
 
 It allows you to write code like this, which is remedial in most other modern languages:
 
@@ -73,16 +92,11 @@ billing.some_function();
 address.some_other_function();
 ```
 
-Webpack allows you to specify that `main.js` is your main file, and that it should examine that file, and locate any needed files
-referenced by `main.js` (in our case, `"address"` and `"billing"`), any  needed files *those* files need, etc., and produce a
-single output file in JavaScript that can be used in a web browser.
+Webpack allows you to specify that `main.js` is your main file, and that `main.js` might contain instructions for locating other files, which Webpack should do, recursively until all needed files have been located. All those files should then be brought together and translated into a single file, suitable for use in a web browser.
 
-It is surprisingly counter-intuitive how Webpack does this.  `webpack -o bundle.js *.js` is not it.  Because the JavaScript
-ecosystem favors monolithic, do-everything tools, Webpack, in fact, does everything.  It's super flexible, which means it's hard
-to use, hard to understand, and hard to learn.
+Surprisingly, `webpack -o bundle.js *.js` does not do this.  Because the JavaScript ecosystem favors monolithic, do-everything tools, Webpack, in fact, does everything (except what it doesn't—we'll get to that).  It's super flexible, which means it's hard to use, hard to understand, and hard to learn.
 
-I'm going to try to correct that by starting from a very simple case, and building things up, one step at a time, until we have a
-reasonable development and production environment, while only added configuration when **there is a problem that needs solving**.
+I'm going to try to correct that by starting from a very simple case, and building things up, one step at a time, until we have a reasonable development and production environment, while only adding configuration when **there is a problem that needs solving**.
 
 ## Webpack from First Principles
 
@@ -102,18 +116,29 @@ This will create an empty `package.json` for us.  Now, let's install Webpack!
 
 !SH{quiet} yarn add webpack
 
-Holy moly is that a lot of stuff.  I find it anxiety-inducing to watch the sheer volume of code being downloaded, and often
+Holy moly is that a lot of stuff!  I find it anxiety-inducing to watch the sheer volume of code being downloaded, and often
 wonder what problem *that* solves, but nevertheless, it should work.  There will be ASCII art.  There will be warnings that you
 have to ignore.  But it should work, and you can verify it like so:
 
 !SH $(yarn bin)/webpack --version
 
-The `$(yarn bin)` bit is a shell invocation that knows where `yarn` has installed binaries (In UNIX shells `$(some_command)` runs
-    `some_command` and puts its output on the command line—try `yarn bin` and you'll see what I mean).  In this case, the path is `node_modules/.bin`, which you don't want to ever have to type, but you definitely want to run things out of there. It's easy to install older versions in a more global path.
+<aside class="sidebar">
+<h1>What is <code>$(yarn bin)</code?</h1>
+<p>
+The `$(yarn bin)` bit is a shell invocation that knows where `yarn` has installed binaries (In UNIX shells `$(some_command)` runs `some_command` and puts its output on the command line—try `yarn bin` and you'll see what I mean).  In this case, the path is `node_modules/.bin`, which you don't want to ever have to type, but you definitely want to run things out of there. 
+</p>
+<p>
+If you just start typing <code>yarn</code>, your system might have some older, more busted version of Webpack installed in a path outside your project, and you'll get strange failures.  Because the JavaScript ecosystem favors silent failures and obfuscated error messages, you need to take extra care to know what you are executing.  Thus, <code>$(yarn bin)</code>
+</p>
+</aside>
+
+<aside class="pullquote">You've now taken your first step into a larger world, which is rife with version incompatibilities, masked or incorrect error messages, and inconsistent behavior.</aside>
 
 You've now taken your first step into a larger world, which is rife with version incompatibilities, masked or incorrect error messages, and inconsistent behavior, all so you can try to make your life easier while using one of the worst programming languages ever designed!  Webpack is one of the least bad things you'll deal with.
 
 With this out of the way, let's see Webpack actually do something.
+
+## A Very Simple Project
 
 As we mentioned above, the purpose of Webpack is to take lots of JavaScript modules and produce a bundle that works
 in a browser, thus allowing you to write organized code.
@@ -238,9 +263,9 @@ module.exports = {
 };
 !END CREATE_FILE
 
-This will do what we did before with Webpack, *except* it will place `bundle.js` inside `dist/` instead of the current directory.  This path must be absolute for reasons that are uninteresting and arbitrary.  To turn our intention into what Webpack wants, we use the Node module `path`, which has a function `resolve` which will make Webpack happy.
+This will do what we did before with Webpack, *except* it will place `bundle.js` inside `dist/` instead of the current directory.  This path must be absolute for reasons that are uninteresting and arbitrary.  To satisfy this unnecessary requirement, we use the Node module `path`, which has a function `resolve` which will take our intention to use `dist/` and specify the full path for Webpack.
 
-Also, yes, this file is in the root directory of our project, which is kindof unfortunate, but it'll make things easier
+Also, yes, this file is in the root directory of our project, which is unfortunate, but it'll make things easier
 for us for the time being, so just get used to it and be glad it's not called `WebpackFile`.
 
 With this configuration in place, we can run it like so:
@@ -254,13 +279,13 @@ If we move our `index.html` into the newly-created `dist`:
 
 !SH mv index.html dist
 
-We can open that in a browser, open the JavaScript console and see the same messages as before.
+We can open that in a browser, open the JavaScript console, and see the same messages as before.
 
 !DUMP_CONSOLE dist/index.html
 
 The configuration file saves us some keystrokes, but even typing our `$(yarn bin)/webpack etc etc` is a bit cumbersome.  We'll use a handy feature of `package.json` to create an alias for running webpack so we can just type `yarn webpack`.
 
-We'll add a `"scripts"` key to `package.json` so the entire thing should now look like so:
+We'll add a `"scripts"` key to `package.json`:
 
 !PACKAGE_JSON
 {
@@ -269,6 +294,10 @@ We'll add a `"scripts"` key to `package.json` so the entire thing should now loo
   }
 }
 !END PACKAGE_JSON
+
+Your entire `package.json` looks like so:
+
+!SH cat package.json
 
 And now:
 
@@ -299,8 +328,6 @@ I don't like that.  Boilerplate is just as tedious as “magic” and is just as
 with a problem to solve, and figure out together how to solve that with Webpack.  There wil be digressions, yak shaving, and a
 few bumps in the road, but we'll get there.
 
-The two next obvious things we might want to do are using third party libraries and unit testing.  Since unit testing requires a
-bit of third party libraries, let's hold off on that for now.  Instead, we'll turn our fake application into something real, and
-bring in a third party library.
-
-Spoiler: It's not as easy as you are hoping it will be.
+The two next obvious things we might want to do are using third party libraries and unit testing.  Since unit testing requires
+third party libraries, let's tackle third party libraries first by creating a more realistic application and bringing in some
+open source code to help write it.

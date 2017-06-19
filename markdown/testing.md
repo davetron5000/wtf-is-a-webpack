@@ -21,7 +21,7 @@ by finding a reasonably complete library that allows us to write tests and asser
 [jasmine]: https://jasmine.github.io
 
 First, we'll add it to our `package.json`.  We'll use `yarn add` again, but pass `-D` which means "this is a
-development dependency".  That's important because when we get around to shipping our awesome Markdown converter to
+development dependency".  That's important because when we get around to shipping our awesome Markdown previewer to
 production, we don't need our development dependencies to be part of that.
 
 !SH yarn add -D jasmine
@@ -49,7 +49,7 @@ describe("canary", function() {
 !END CREATE_FILE
 
 Hopefully, Jasmine's syntax and API is clear, but the idea is that we use `describe` to block of a bunch of tests we'll write,
-and then `it` for each test.  The idea is that these can be pieced together is some pidgen-like English that developers
+and then `it` for each test.  The idea is that these can be pieced together in some pidgen-like English that developers
 convince themselves is a specification.  It's silly, but works.
 
 And now we have a test:
@@ -92,7 +92,9 @@ Before we see where those come from, let's assume they exist so we can write our
 First thing is to call `attachPreviewer` and get the function we're going to execute. Let's assume (I know, SO MANY assumptions…it'll work out, I promise) that we have `markdownPreviewer` available, which is our code.
 
 ```javascript
-var submitHandler = markdownPreviewer.attachPreviewer(document,"source","preview");
+var submitHandler = markdownPreviewer.attachPreviewer(document,
+                                                      "source",
+                                                      "preview");
 ```
 
 `document` is assumed to exist, and we're also assuming that calls to `document.getElementById("source")` and
@@ -113,7 +115,8 @@ submitHandler(event);
 The main point of our test is that we rendered markdown, so let's check for that:
 
 ```javascript
-expect(preview.innerHTML).toBe("<p>This is <em>some markdown</em></p>");
+expect(preview.innerHTML).toBe(
+    "<p>This is <em>some markdown</em></p>");
 ```
 
 We also want to make sure that `preventDefault()` was called on `event`, so let's hand-wave over that like so:
@@ -128,12 +131,15 @@ This means our entire test is:
 describe("markdownPreviewer", function() {
   describe("attachPreviewer", function() {
     it("renders markdown to the preview element", function() {
-      var submitHandler = markdownPreviewer.attachPreviewer(document,"source","preview");
+      var submitHandler = markdownPreviewer.attachPreviewer(document,
+                                                            "source",
+                                                            "preview");
       source.value = "This is _some markdown_";
 
       submitHandler(event);
 
-      expect(preview.innerHTML).toBe("<p>This is <em>some markdown</em></p>");
+      expect(preview.innerHTML).toBe(
+          "<p>This is <em>some markdown</em></p>");
       expect(event.preventDefaultCalled).toBe(true);
     });
   });
@@ -229,13 +235,16 @@ var document = {
 describe("markdownPreviewer", function() {
   describe("attachPreviewer", function() {
     it("renders markdown to the preview element", function() {
-      var submitHandler = markdownPreviewer.attachPreviewer(document,"source","preview");
+      var submitHandler = markdownPreviewer.attachPreviewer(document,
+                                                            "source",
+                                                            "preview");
       source.value = "This is _some markdown_";
 
       submitHandler(event);
 
+      expect(preview.innerHTML).toBe(
+        "<p>This is <em>some markdown</em></p>");
       expect(event.preventDefaultCalled).toBe(true);
-      expect(preview.innerHTML).toBe("<p>This is <em>some markdown</em></p>");
     });
   });
 });
@@ -278,7 +287,7 @@ In they JavaScript ecosystem: pretty much all of them.
 Because each project is a chance to artisnally hand-craft a small batch tool chain, and because the language we're using can't
 even agree on something basic like how to modularize code, we end up with lots of tools that cannot interoperate together at all.
 
-In this case, our desire to use `import` conflicts with Jasmine's inabiity to handle it.
+In this case, our desire to use `import` conflicts with Jasmine's inability to handle it.
 
 What we need is a test runner that can both use Webpack to assemble our code, but also execute our tests using Jasmine.
 
@@ -315,16 +324,13 @@ OK, now what?  Karma's homepage currently states:
 
 It's OK to chuckle at their proclaimation that we don't need loads of configuration.  Spoiler: we will.
 
-It's common to use `karma init` to create a config file to start off with but this a) requires interactive input
-, b) places the file in the current directory, and c) creates a file with way more configuration than is technically needed.  We don't want any of that, so create `spec/karma.conf.js` yourself.  The bare minimum information you have to provide is:
+It's common to use `karma init` to create a config file to start off with but this a) requires interactive input, b) places the file in the current directory, and c) creates a file with way more configuration than is technically needed.  We don't want any of that, so create `spec/karma.conf.js` yourself.  The bare minimum information you have to provide is:
 
 * What testing frameworks are being used (Jasmine, in our case)
 * Where the actual test files are (`spec/` in our case)
 * What browsers we want to run the code in. (See below for why we have to care about browsers)
 
-There's no technical reason to have to provide any of this information, but JavaScript doesn't want to tell you where to put your
-files or what testing frameworks to use.  It's cool with anything, so you do you (even though your job is to get things done and
-not evaluate a bunch of essetially equivalent testing frameworks).
+There's no technical reason to have to provide any of this information, but JavaScript doesn't want to tell you where to put your files or what testing frameworks to use.  It's cool with anything, so you do you (even though your job is to get things done and not evaluate a bunch of essentially equivalent testing frameworks).
 
 The mimimal configuration would the following, which you should place into `spec/karma.conf.js`:
 
@@ -372,7 +378,7 @@ With that done, we can now run our tests:
 The `--single-run` means "actually run the tests and report the results".  Without it, Karma sits there waiting for
 you to navigate to a web server it starts up that then runs the tests.  Trust me, this is the best it gets for now.
 
-You'll notice it failed withi the same error as before. The difference here, is that Karma is sophisticated enough such that we
+You'll notice it failed with the same error as before. The difference here, is that Karma is sophisticated enough such that we
 can throw more JSON at it to fix the problem.
 
 We need to have our tests use Webpack to bundle up our JavaScript so we can access it and run tests against it.

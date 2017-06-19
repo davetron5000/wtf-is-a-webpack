@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href='styles.css' rel='stylesheet' type='text/css' media='all'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta charset="utf-8">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <header>
+      <h1>Test Book</h1>
+      <% if show_full_header %>
+      <h2>It can work!</h2>
+      <% end %>
+    </header>
+    <article class="chapter">
+      <h1><%= chapter.title %></h1>
+      <%= html %>
+    </article>
+    <footer>
+      <nav>
+        <ul>
+          <% if chapter.next_chapter %>
+            <li class="next">
+              <a href="<%= chapter.next_chapter.url %>"><%= chapter.next_chapter.title %> &rarr;</a>
+            </li>
+          <% end %>
+          <% if chapter.previous_chapter %>
+            <li class="previous">
+              <a href="<%= chapter.previous_chapter.url %>">&larr; <%= chapter.previous_chapter.title %></a>
+            </li>
+          <% end %>
+        </ul>
+      </nav>
+    </footer>
+  </body>
+</html>
