@@ -36,3 +36,55 @@ Next, open up `css/styles.css` in your editor, and arrange your windows so that 
 The refresh isn't as fast as we'd like, but it's still not too bad.  You could easily open up your code editor on one side of the screen, and your browser on the other, and get to work.
 
 Part of the reason is that we split our code into dev and production.  To re-run Webpack in dev, we aren't minifying, hashing, or generating a slow source map.  That helps.
+
+What about tests?
+
+## Auto-reloading in Tests
+
+When we learned about Karma, we gave it the `--single-run` flag.  We later saw that omitting this starts up a server you can use
+to run your tests in any  browser.  This server also watches for changes in our code and tests and re-runs them automatically.
+
+```
+> $(yarn bin)/karma start spec/karma.conf.js
+Hash: e0bdc8cc97632b01d813
+Version: webpack 3.0.0
+Time: 40ms
+webpack: Compiled successfully.
+webpack: Compiling...
+webpack: wait until bundle finished:
+Hash: 45c62a5c6505ba4e17fb
+Version: webpack 3.0.0
+Time: 176ms
+                  Asset     Size  Chunks             Chunk Names
+         canary.spec.js   2.6 kB       0  [emitted]  canary.spec.js
+markdownPreview.spec.js  78.8 kB       1  [emitted]  markdownPreview.spec.js
+   [0] ./spec/canary.spec.js 107 bytes {0} [built]
+   [1] ./spec/markdownPreview.spec.js 1.23 kB {1} [built]
+   [2] ./js/markdownPreviewer.js 381 bytes {1} [built]
+   [3] ./node_modules/markdown/lib/index.js 143 bytes {1} [built]
+   [4] ./node_modules/markdown/lib/markdown.js 51 kB {1} [built]
+   [5] ./node_modules/util/util.js 15.6 kB {1} [built]
+   [6] (webpack)/buildin/global.js 509 bytes {1} [built]
+   [7] ./node_modules/process/browser.js 5.42 kB {1} [built]
+   [8] ./node_modules/util/support/isBufferBrowser.js 203 bytes {1} [built]
+   [9] ./node_modules/util/node_modules/inherits/inherits_browser.js 672 bytes {1} [built]
+webpack: Compiled successfully.
+25 06 2017 11:32:38.096:WARN [karma]: No captured browser, open http://localhost:9876/
+25 06 2017 11:32:38.103:INFO [karma]: Karma v1.7.0 server started at http://0.0.0.0:9876/
+25 06 2017 11:32:38.104:INFO [launcher]: Launching browser PhantomJS with unlimited concurrency
+25 06 2017 11:32:38.108:INFO [launcher]: Starting browser PhantomJS
+25 06 2017 11:32:38.928:INFO [PhantomJS 2.1.1 (Mac OS X 0.0.0)]: Connected on socket l1dBRG0VGQoUpBORAAAA with id 2070764
+PhantomJS 2.1.1 (Mac OS X 0.0.0): Executed 2 of 2 SUCCESS (0.012 secs / 0.008 secs)
+```
+
+Your tests might still be broken from the last chapter, so, without stopping Karma, fix the tests.  They should automatically
+re-run without doing anything.  Nice!
+
+What this means is that by running Karma all the time, you can work quickly with a TDD flow, and when you need to switch to
+in-browser design or tweaking, running the Webpack dev server lets you work quickly there, too.
+
+There's one last thing we need to look into, and that's the ability to use a better language than JavaScript and a better
+styling system than CSS.  Since Webpack is essentially compiling our JavaScript and CSS, it stands to reason that if we wanted
+to use something like TypeScript or ES2015, or write CSS using Sass, it should be able to handle that.
+
+Let's tackle code first.

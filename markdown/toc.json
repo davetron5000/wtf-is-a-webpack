@@ -31,6 +31,14 @@
     {
       "name": "dev_server",
       "title": "Auto-reload Code When You Change It"
+    },
+    {
+      "name": "preprocess-js",
+      "title": "Writing Code in Another Language"
+    },
+    {
+      "name": "preprocess-css",
+      "title": "Using Modern CSS Tools"
     }
   ]
 }

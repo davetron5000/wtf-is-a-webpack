@@ -320,7 +320,6 @@ There's a lot we aren't doing, that we need to do on any real project, such as:
 * Packaging for production
 * Using ES6/ES2015/ESWhatever features
 * Managing CSS using SASS
-* Dealing with Webfonts
 
 These are all possible with Webpack and also happen to be intended use-cases, however it's extremely hard to figure out how to do these things without someone just showing you the magical configuration needed to make them happen.  
 

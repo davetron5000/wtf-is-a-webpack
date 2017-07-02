@@ -51,6 +51,13 @@ RSpec.describe Bookdown::Directives::CreateFile do
         string: "```html"
       )
     end
+    it "can be told what the language is via options" do
+      directive = described_class.new("/tmp/blah/foo.html",["language=xml"])
+      expect(directive.execute).to have_command(
+        Bookdown::Directives::Commands::PutsToFileIO,
+        string: "```xml"
+      )
+    end
 
   end
   describe "#continue?" do

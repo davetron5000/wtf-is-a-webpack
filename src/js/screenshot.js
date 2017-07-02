@@ -1,8 +1,8 @@
 /*
  * PhantomJS script to take a screenshot
  */
-var page   = require('webpage').create();
-var system = require('system');
+var page   = require("webpage").create();
+var system = require("system");
 var args   = system.args;
 
 page.onConsoleMessage = function(msg) {

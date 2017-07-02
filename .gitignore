@@ -4,3 +4,5 @@ work
 parsed_markdown
 site
 src/coverage
+.DS_Store
+*.sw?

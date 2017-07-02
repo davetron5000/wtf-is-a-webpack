@@ -36,7 +36,7 @@ module Bookdown
         queue << Commands::MethodCall.new(FileUtils,:rm_rf,@filename)
         queue << Commands::MethodCall.new($stdout,:puts,"Creating #{@filename.dirname}")
         queue << Commands::MethodCall.new(FileUtils,:mkdir_p,@filename.dirname)
-        queue << Commands::PutsToFileIO.new("```#{Bookdown::Language.new(@filename)}")
+        queue << Commands::PutsToFileIO.new("```#{language}")
         queue
       end
 
@@ -54,6 +54,17 @@ module Bookdown
           queue << Commands::PutsToFileIO.new(line)
         end
         queue
+      end
+
+    private
+
+      def language
+        language_override = @options.detect { |_| _ =~/^language=/ }
+        if language_override
+          language_override.gsub(/^language=/,'')
+        else
+          Bookdown::Language.new(@filename)
+        end
       end
     end
   end
