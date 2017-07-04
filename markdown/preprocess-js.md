@@ -3,7 +3,7 @@ JavaScript is not a great programming language.  Even with Webpack giving us the
 For example, we have to remember to use `===` everywhere or things get weird.  We also have to type the keyword `function` **a
 lot**. Scoping is a mess, we can't make constants, and it would be nice to define a proper class that handles `this`.
 
-[ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/) addresses all of this faiures in JavaScript, but we can't run
+[ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/) addresses all of this failures in JavaScript, but we can't run
 it in a browser.  What we *can* do is translate it *to* JavaScript, allowing us to write modern code that still runs in a
 browser.
 
@@ -31,7 +31,7 @@ export default {
 }
 !END CREATE_FILE
 
-It's fairly similar, because our code is very simple, but not that we've changed from `function` to using [arrows](https://github.com/lukehoban/es6features#arrows) and we've changed our use of `var` to [`const`](https://github.com/lukehoban/es6features#let--const), since the variables never get assigned more than once.
+It's fairly similar, because we don't have that much, but note that we've changed from `function` to using [arrows](https://github.com/lukehoban/es6features#arrows) and we've changed our use of `var` to [`const`](https://github.com/lukehoban/es6features#let--const), since the variables never get assigned more than once.
 
 Also note that if you run Webpack now, and you are using a modern browser, this code has a good chance of working.  But, it
 won't work for all browser, including ones we want to support.  Let's continue.

@@ -11,8 +11,10 @@ module Bookdown
     def parse_chapters
       toc = JSON.parse(File.read(@markdown_dir / "toc.json"))["toc"]
       @chapters = toc.map { |chapter_hash|
-        Chapter.new(hash: chapter_hash)
-      }
+        unless chapter_hash["skip"]
+          Chapter.new(hash: chapter_hash)
+        end
+      }.compact
       @chapters.each_with_index do |chapter,index|
         if index != 0
           chapter.previous_chapter = @chapters[index-1]
@@ -35,12 +37,16 @@ module Bookdown
         @title ||= @hash["title"]
       end
 
+      def name
+        @hash["name"]
+      end
+
       def basename
-        @basename ||= "#{@hash["name"]}.md"
+        @basename ||= "#{name}.md"
       end
 
       def url
-        @url ||= @hash["name"] + ".html"
+        @url ||= name + ".html"
       end
     end
   end

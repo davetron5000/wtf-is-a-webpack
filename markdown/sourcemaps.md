@@ -24,7 +24,7 @@ that the problem wasn't in line 1 of our bundle, but on line 10 of `markdownPrev
 Webpack can produce sourcemaps.  The configuration option is, of course, not called something intuitive like `sourceMap`, but instead is called [`devtool`](https://webpack.js.org/configuration/devtool/).
 
 The possible values for `devtool:` are many, and poorly documented.  Since we have different configurations
-for production and developoment, we can use different source map strategies.  For production, we'll use
+for production and development, we can use different source map strategies.  For production, we'll use
 `source-map` as that contains the most information and is designed for production.
 
 In `webpack/production.js`:
@@ -38,7 +38,7 @@ In `webpack/production.js`:
 }
 !END EDIT_FILE
 
-For deveopment, we want the fastest thing possible that shows the most information.  I *think* that's
+For development, we want the fastest thing possible that shows the most information.  I *think* that's
 `inline-source-map`, but the docs are unclear.  It works, so we'll use it:
 
 !EDIT_FILE webpack/dev.js /* */
@@ -222,6 +222,6 @@ With what we have now, we can get really far, and there are many places we could
 * Speeding up our design-in-the-browser cycle with some automatic reloading (_Hot module reloading_).
 * Improving our production deploy by splitting code (_Code splitting_).
 * Reducing the size of our production deploy by removing un-used code (_Tree-shaking_).
-* Using pre-processesors like SAAS, ES2015, or TypeScript.
+* Using preprocessors like SAAS, ES2015, or TypeScript.
 
 For me, the developer experience is paramount.  When we, as developers, feel productive and efficient, it opens up many more possibilities than if we are constantly fighting our tools.  And, the number one issue right now is that we have to run Webpack manually…_a lot_.  Let's fix that.

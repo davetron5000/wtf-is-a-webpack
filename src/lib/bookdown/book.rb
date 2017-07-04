@@ -9,7 +9,8 @@ module Bookdown
                   :work_dir,
                   :parsed_markdown_dir,
                   :images_dir,
-                  :site_dir
+                  :site_dir,
+                  :saved_work_dir
 
     def initialize(src_dir: ,
          static_images_dir: ,
@@ -23,7 +24,8 @@ module Bookdown
       @html_dir            = src_dir / "html"
       @static_images_dir   = Pathname(static_images_dir).expand_path
       @markdown_dir        = Pathname(markdown_dir).expand_path
-      @work_dir            = Pathname(work_dir).expand_path
+      @work_dir            = Pathname(work_dir).expand_path / "work"
+      @saved_work_dir      = Pathname(work_dir).expand_path / "saved-work"
       @parsed_markdown_dir = Pathname(parsed_markdown_dir).expand_path
       @images_dir          = @parsed_markdown_dir / "images"
       @site_dir            = Pathname(site_dir)

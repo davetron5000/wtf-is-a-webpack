@@ -46,7 +46,7 @@ check `NODE_ENV` and use the CDN or not, depending on the value:
 }
 !END EDIT_FILE
 
-Now, when we run `yarn webpack`, it generates our deveopment bundle:
+Now, when we run `yarn webpack`, it generates our development bundle:
 
 !SH yarn webpack
 
@@ -145,7 +145,7 @@ might want to be able to see errors that reference our source code, not the bund
 * *Ergonomics.* Building a UI sadly does involve a lot of “tweak and reload”, and in our current workflow, that means running
 Webpack each time.  It's not super fast, and as our application gets more complex, Webpack will be slower and slower.  It would
 be nice if that process could be faster.
-* *A more sophisticated way of bundling for production.* The current mechanism just dumps everythning in `dist/`, where
+* *A more sophisticated way of bundling for production.* The current mechanism just dumps everything in `dist/`, where
 `dist/index.html` is whatever you did last: `yarn webpack` or `yarn prod`.  Kinda gross.
 
 Let's tackle each of these, starting with CSS, because there's just no way your project won't need CSS.
