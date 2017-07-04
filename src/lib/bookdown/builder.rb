@@ -42,9 +42,11 @@ module Bookdown
       force_reparse = false
       each_chapter_config(book) do |chapter|
         result = parse_chapter(book,chapter, force_reparse: force_reparse)
-        force_reparse ||= result
-        result = render_chapter(book,chapter, force_reparse: force_reparse)
-        force_reparse ||= result
+        if result && !force_reparse
+          @logger.info "Chapter #{chapter.name} was re-parsed, forcing re-rendering and subsequent chapter reparsing"
+          force_reparse = true
+        end
+        result = render_chapter(book,chapter)
       end
 
       process_css(book)
@@ -87,6 +89,7 @@ module Bookdown
         do_parse(book,chapter,chapter_saved_work)
         true
       elsif Dir.exist?(chapter_saved_work)
+        @logger.info "Chapter #{chapter.title} has not changed, restoring work dir"
         @file_utils.rm_rf book.work_dir
         @file_utils.cp_r chapter_saved_work / "work", book.work_dir
         false
@@ -106,10 +109,10 @@ module Bookdown
       @file_utils.cp_r book.work_dir, chapter_saved_work
     end
 
-    def render_chapter(book,chapter, force_reparse: false)
+    def render_chapter(book,chapter)
       template = book.html_dir / "chapter.html"
       html_file = book.site_dir / chapter.url
-      if force_reparse || updated?([template,chapter.parsed_markdown_file], html_file)
+      if updated?([template,chapter.parsed_markdown_file], html_file)
         @logger.info "Chapter #{chapter.title} rendering #{chapter.parsed_markdown_file}"
 
         renderer = Bookdown::Renderer.new
@@ -118,7 +121,7 @@ module Bookdown
                         parsed_markdown_file: chapter.parsed_markdown_file,
                         html_file: html_file)
       else
-        @logger.info "Chapter #{chapter.title} is up to date"
+        @logger.info "Chapter #{chapter.title}'s HTML is up to date"
       end
     end
 

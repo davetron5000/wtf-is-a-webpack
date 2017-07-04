@@ -12,6 +12,8 @@ task :default do
                site_dir: Pathname("../what-problem-does-it-solve.com/site").expand_path / "webpack"
   )
 
-  builder = Bookdown::Builder.new
+  logger = Logger.new(STDOUT)
+  logger.level = ENV["DEBUG"] == "true" ? Logger::DEBUG : Logger::INFO
+  builder = Bookdown::Builder.new(logger: logger)
   builder.build(book)
 end
