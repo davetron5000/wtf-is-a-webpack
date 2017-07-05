@@ -19,7 +19,9 @@ class RecognizeMatchData
       if negated == :negated
         "Didn't expect #{@options.inspect}"
       else
-        "Expected #{@options.inspect}, but #{mismatched_methods.inspect}"
+        mismatched_methods.map { |(method,expected,got)|
+          "#{method} returned '#{got}' instead of '#{expected}'"
+        }
       end
     else
       if negated == :negated
@@ -43,7 +45,7 @@ private
   def mismatched_methods
     @options.map { |method,value|
       [method,value,@instance.send(method)]
-    }.reject { |(method,got,expected)|
+    }.reject { |(method,expected,got)|
       got == expected
     }
   end
@@ -54,7 +56,9 @@ RSpec::Matchers.define :recognize do |*args|
   elsif args.length == 2 && args[1].kind_of?(Hash) && args[1].key?(:as)
     [args[0],nil,args[1]]
   else
-    [args[0],args[1],(args[2] || {}).merge(as: {})]
+    options = args[2] || {}
+    options[:as] ||= {}
+    [args[0],args[1],options]
   end
 
   match do |klass|

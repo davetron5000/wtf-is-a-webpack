@@ -50,6 +50,18 @@ img {
       background: $link-background;
     }
   }
+  a.embiggen-image {
+    text-decoration: none;
+    padding: 0
+    margin: 0;
+    color: $ink;
+    &::after {
+      content: "";
+    }
+    &:hover {
+      background: $link-background;
+    }
+  }
   h1 {
     &::after {
       display: block;

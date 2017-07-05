@@ -27,16 +27,20 @@ module Bookdown
         Bookdown::Directives::DoAndJsConsole  => [ :line ],
         Bookdown::Directives::PackageJson     => [ :line ],
         Bookdown::Directives::CreateFile      => [ :line ],
+        Bookdown::Directives::Graphviz        => [ :line, :screenshots_dir ],
       }
     end
 
     def parse(input: , output:)
       existing_directive = nil
+      existing_directive_line_no = nil
 
       File.open(output,"w") do |file|
         File.open(input) do |input|
           chdir @work_dir do
+            line_no = 0
             input.readlines.each do |line|
+              line_no += 1
               if existing_directive
                 commands = existing_directive.append(line)
                 command_executor.execute_all(commands,file)
@@ -44,6 +48,7 @@ module Bookdown
                   existing_directive = nil
                 end
               elsif directive = detect_directive(line)
+                existing_directive_line_no = line_no
                 commands = directive.execute
                 command_executor.execute_all(commands,file)
                 if directive.continue?
@@ -56,17 +61,27 @@ module Bookdown
           end
         end
       end
+      if existing_directive != nil
+        raise "Still inside a #{existing_directive.class} from line #{existing_directive_line_no} - missing a close tag?"
+      end
       output
     end
 
   private
 
     def detect_directive(line)
-      directives.map { |directive_klass,args_template|
+      directive = directives.map { |directive_klass,args_template|
         args = args_template.zip([line,@screenshots_dir]).map { |_| _[1] }
         @logger.debug("Checking #{directive_klass} against #{args}")
         directive_klass.recognize(*args)
       }.compact.first
+      if directive
+        directive
+      elsif line =~ /^\![A-Z]+/
+        raise "Unknown directive #{line}"
+      else
+        nil
+      end
     end
 
     def command_executor

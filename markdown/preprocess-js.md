@@ -156,6 +156,23 @@ breaks and it's currently not fixable in this setup.  Changing the order of the 
 setting options for babel.  Even debugging this is difficult, because of how poorly all these tools are designed and how opaque
 their interoperability is.
 
-Such a letdown, but let's continue on.  Writing ES2015 is still a win, so let's modernize our CSS, too.
+Such a letdown.  And it seems like a pretty fitting end to our journey.
 
+## Where We Are
 
+It's not all bleak.  We started with some basic needs to manage JavaScript and Webpack has met them, and more.  We can write
+modular JavaScript, handle both development and production, run tests, and even use a new language.  What's better, the amount of
+configuration we had to add wasn't that great.
+
+! SH wc -l webpack.config.js webpack/*.js spec/karma.conf.js
+
+That's less than 100 lines total, and we have a completely workable development environment.
+
+Hopefully, you've learned a bit about why Webpack exists, and what it can (and can't) do.  I also hope you've learned to feel
+confident in your needs as a developer and comfortable pointing out when available tools aren't meeting those needs.  It doesn't
+mean the people that put their blood, sweat, and tears into them are bad people, but designing build tools is hard, and the
+JavaScript ecosystem has the widest variety of developers ever, so it's hard to please everyone.
+
+That said, I want to spend the last chapter discussing the design decisions that I believe make this entire thing do difficult to
+deal with and what might make it all work better.  These are ways of thinking that help you build any application, even if it's
+not as build tool.
