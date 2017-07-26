@@ -54,6 +54,8 @@ thing or break your environment. [Django's schema migrations](https://docs.djang
 example of ergonomic safety—it automatically adds foreign key constraints to your database (which, if you aren't familiar, is
 a simple and accepted way to ensure your database has correct data in it).
 
+!AD "Think Broadly" "Learn how to solve bigger problems" http://theseniorsoftwareengineer.com "Buy Now $25" http://full-stack-rails.com/sweng-cover.png
+
 Thinking back on the tools we've used, have any of them been particularly ergonomic?  Even our most basic need for Webpack to
 compile two files doesn't work without specifying a lot of complex command-line parameters.  When we introduced ES2015 to our
 tests, we lost source maps (not that they worked in PhantomJS in the first place).  If you'll recall setting up CSS, the default
@@ -407,6 +409,8 @@ install and set up everything twice, once for Webpack and once for Karma?
 * You can immediately start writing code and don't have to make decisions about where files should go or what sort of configuration you need.
 * Every project using this framework has the same shape, meaning you can jump into existing projects with a lot of context learned
 from the last one. Things learned from one project apply to the next.
+
+!AD "Learn Rails" "Feel productive using modern tools" https://pragprog.com/book/rails51/ "Buy Now $29.95" https://imagery.pragprog.com/products/530/rails51_xxlargecover.jpg
 
 The downsides are flexibility.  If the defaults that are set up don't work for your use-case, it's hard to change them. This also
 suffers the same problem as Webpack when there are internal failures—they are opaque and essentially impossible to debug.  But,

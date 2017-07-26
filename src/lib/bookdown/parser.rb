@@ -28,6 +28,7 @@ module Bookdown
         Bookdown::Directives::PackageJson     => [ :line ],
         Bookdown::Directives::CreateFile      => [ :line ],
         Bookdown::Directives::Graphviz        => [ :line, :screenshots_dir ],
+        Bookdown::Directives::Ad              => [ :line ],
       }
     end
 

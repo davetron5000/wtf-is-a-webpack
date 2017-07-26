@@ -107,3 +107,21 @@ aside.toc {
     }
   }
 }
+
+aside.ad {
+  background: darken($paper-grey,5%);
+  border:solid thin $ink-light;
+  border-radius: $sz4;
+
+  h3 a {
+    border-radius: $sz4;
+    border: solid thin $ink-light;
+    &:hover {
+      background: $paper;
+    }
+  }
+  .banner {
+    background: $paper;
+    border-radius: $sz4;
+  }
+}

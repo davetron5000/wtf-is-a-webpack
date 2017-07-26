@@ -30,11 +30,11 @@ $line-height: 1.4;
 $text-width: $body-font-size * $chars-per-line / 2;
 
 // Some sizes
-$sz1: $body-font-size * $line-height * 2;
-$sz2: $body-font-size * $line-height;
-$sz3: $body-font-size * $line-height / 2;
-$sz4: $body-font-size * $line-height / 4;
-$sz5: $body-font-size * $line-height / 8;
+$sz1: $body-font-size * $line-height * 2; // 50.50px
+$sz2: $body-font-size * $line-height;     // 25.20px
+$sz3: $body-font-size * $line-height / 2; // 12.60px
+$sz4: $body-font-size * $line-height / 4; //  6.30px
+$sz5: $body-font-size * $line-height / 8; //  3.15px
 
 @mixin header-font {
   font-family: avenir next,avenir,sans-serif;
@@ -323,4 +323,48 @@ aside.toc {
   }
 }
 
+aside.ad {
+  max-width: 100%;
+  width: 100%;
+  text-align: center;
 
+  h1 {
+    font-size:  $f6;
+    margin-bottom: 0;
+    &::after {
+      content: "";
+    }
+  }
+  h2 {
+    margin-top: 0;
+    font-size: $f7;
+  }
+  h3 a {
+    font-size: $f7;
+    text-transform: uppercase;
+    padding-left: $sz2;
+    padding-right: $sz2;
+    padding-top: $sz3;
+    padding-bottom: $sz3;
+    font-weight: bold;
+  }
+  a::after {
+    content: "";
+  }
+  .banner {
+    display: block;
+    font-style: italic;
+    padding-top: $sz3;
+    padding-bottom: $sz3;
+    margin-bottom: $sz3;
+    text-align: center;
+    width: 100%;
+  }
+  @media screen and (min-width: 30em) {
+    max-width: 50%;
+    float: left;
+    margin-right: $sz2;
+    margin-top: $sz3;
+    margin-bottom: $sz3;
+  }
+}

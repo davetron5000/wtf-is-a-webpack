@@ -127,6 +127,7 @@ have to ignore.  But it should work, and you can verify it like so:
 
 You've now taken your first step into a larger world, which is rife with version incompatibilities, masked or incorrect error messages, and inconsistent behavior, all so you can try to make your life easier while using one of the worst programming languages ever designed!  Webpack is one of the least bad things you'll deal with.
 
+
 With this out of the way, let's see Webpack actually do something.
 
 ## A Very Simple Project
@@ -313,6 +314,8 @@ There's a lot we aren't doing, that we need to do on any real project, such as:
 * Managing CSS using SASS
 
 These are all possible with Webpack and also happen to be intended use-cases, however it's extremely hard to figure out how to do these things without someone just showing you the magical configuration needed to make them happen.  
+
+!AD "Webpack with Rails" "Rails makes all this easy" https://pragprog.com/book/dcbang2/rails-angular-postgres-and-bootstrap-second-edition "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
 
 I don't like that.  Boilerplate is just as tedious as “magic” and is just as intention-unrevealing.  So, we're going to start
 with a problem to solve, and figure out together how to solve that with Webpack.  There wil be digressions, yak shaving, and a

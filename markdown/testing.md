@@ -291,6 +291,8 @@ In they JavaScript ecosystem: pretty much all of them.
 Because each project is a chance to artisnally hand-craft a small batch tool chain, and because the language we're using can't
 even agree on something basic like how to modularize code, we end up with lots of tools that cannot interoperate together at all.
 
+!AD "Simplify" "Do this in a full stack Rails app" https://pragprog.com/book/dcbang2/rails-angular-postgres-and-bootstrap-second-edition "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
+
 In this case, our desire to use `import` conflicts with Jasmine's inability to handle it.
 
 What we need is a test runner that can both use Webpack to assemble our code, but also execute our tests using Jasmine.
