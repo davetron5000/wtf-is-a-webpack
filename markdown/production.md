@@ -121,6 +121,10 @@ If you read the docs more, it's clear where this is going - we need one configur
 production.  This is not uncommon amongst web application development tools, however it would nice if
 Wepack just supported this directly, since `-p` is essentially unusable for any real project (if it doesn't work for a 10-line markdown processor, it doesn't work).
 
+<aside class="pullquote">
+We need one configuration for dev and one for production
+</aside>
+
 The good news is, after we set this up, configuring stuff for dev vs. prod will be much simpler.
 
 The trick is to figure out how to avoid duplicating common configuration.  Webpack sort-of supports this
@@ -135,6 +139,26 @@ merging the proper one at compile time.
 The way this works is that our main `webpack.config.js` will simply `require` an environment-specific
 webpack configuration.  Those environment-specific ones will pull in a common Webpack configuration, then
 using the `webpack-merge` module, overwrite or augment anything needed specific to those environments.
+
+!GRAPHVIZ webpack_configs Managing Webpack configs for different environments
+digraph webpack_configs {
+  rankdir="TD"
+
+  Shared[label="webpack/common.js" fontname="Courier" shape="tab"]
+  Dev[label="webpack/dev.js" fontname="Courier" shape="tab"]
+  Prod[label="webpack/production.js" fontname="Courier" shape="tab"]
+  Main[label="webpack.config.js" fontname="Courier" shape="folder" style="bold"]
+  Decision[label="environment?" shape="diamond"]
+
+  Main -> Decision
+
+  Decision -> Dev[label="dev" style="dotted"]
+  Decision -> Prod[label="production" style="dotted"]
+  Dev -> Shared[label="merge and override"]
+  Prod -> Shared[label="merge and override"]
+
+}
+!END GRAPHVIZ
 
 Our general requirements at this point are:
 
@@ -172,8 +196,8 @@ confusing and arbitrary, but this is how it is.
 
 Next, we'll create `webpack/dev.js`.
 
-This file will suck in a common Webpack config, and modify it for development.  This will look very similar
-to our original `bundle.js`, but our output path is going to be `dev` instead of `dist`, so we don't get
+This file will bring in a common Webpack config, and modify it for development.  This will look very similar
+to our original `webpack.config.js`, but our output path is going to be `dev` instead of `dist`, so we don't get
 confused about what files are what.
 
 Also remember that since this file is in `webpack/` and we want to put files in `dev/` (not `webpack/dev`), we have to use `../dev`.

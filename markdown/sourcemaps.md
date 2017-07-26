@@ -23,7 +23,9 @@ that the problem wasn't in line 1 of our bundle, but on line 10 of `markdownPrev
 
 Webpack can produce sourcemaps.  The configuration option is, of course, not called something intuitive like `sourceMap`, but instead is called [`devtool`](https://webpack.js.org/configuration/devtool/).
 
-The possible values for `devtool:` are many, and poorly documented.  Since we have different configurations
+<aside class="pullquote">The configuration option is, of course, not called something intuitive like <code>sourceMap</code></aside>
+
+The possible values for `devtool` are many, and poorly documented.  Since we have different configurations
 for production and development, we can use different source map strategies.  For production, we'll use
 `source-map` as that contains the most information and is designed for production.
 
@@ -75,7 +77,7 @@ What about our CSS?  Sometimes it's nice to know where certain styles are define
 
 To see what I mean, open up your app, and inspect an element.  Your browser should show you the CSS of the element in question and should show you where those classes are defined.  They will all be line 1 of your `.css` bundle.
 
-Making this work is slightly tricky, because we have to expand the configuration given to `ExtractTextPlugin`.  The way it's design is that it takes the exact same options as `use:`, which are currently:
+Making this work is slightly tricky, because we have to expand the configuration given to `ExtractTextPlugin`.  The way it's designed is that it takes the exact same options as `use:`, which are currently:
 
 ```javascript
 {
@@ -137,9 +139,9 @@ Here's our entire test file with a failure introduced:
 {
   "match": "      expect(preview.innerHTML).toBe",
   "replace_with": [
-    "        expect(preview.innerHTML).toBe(\"<p>This is <i>some markdown</em></p>\");",
-    "        // --FAILURE--------------------------------^^^",
-    "        //"
+    "      expect(preview.innerHTML).toBe(\"<p>This is <i>some markdown</em></p>\");",
+    "      // --FAILURE--------------------------------^^^",
+    "      //"
   ]
 },
 {
@@ -213,15 +215,12 @@ This isn't the greatest ending to our desire to have stack traces, but at least 
 
 We can also start to see the tension between monolithic everything-is-included systems like Webpack, and its attempts at modularity and flexibility.  Because neither Webpack nor Karma were designed to work together, and because each tool has a completely proprietary plugin/extension mechanism, we have to jump through a lot of hoops to get them to cooperate.  I'll touch on this later toward the end of our journey, but suffice it to say, the design of these tools seems to have the worst of being monolithic and being modular.
 
+<aside class="pullquote">The design of these tools seems to have the worst of being monolithic and being modular.</aside>
+
 So, what's next?
 
 Our setup is pretty good so far, and we haven't written that much configuration—less than 100 lines!
 
-With what we have now, we can get really far, and there are many places we could go from here:
+With what we have now, we can get really far, but let's add one more tweak to our dev environment, and configure auto-reloading
+of code and tests as we make changes.
 
-* Speeding up our design-in-the-browser cycle with some automatic reloading (_Hot module reloading_).
-* Improving our production deploy by splitting code (_Code splitting_).
-* Reducing the size of our production deploy by removing un-used code (_Tree-shaking_).
-* Using preprocessors like SAAS, ES2015, or TypeScript.
-
-For me, the developer experience is paramount.  When we, as developers, feel productive and efficient, it opens up many more possibilities than if we are constantly fighting our tools.  And, the number one issue right now is that we have to run Webpack manually…_a lot_.  Let's fix that.

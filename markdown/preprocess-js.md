@@ -44,7 +44,8 @@ We'll also need the Babel loader for Webpack:
 
 !SH yarn add babel-loader
 
-Configure the loader in `webpack/common.js`:
+Babel should process all JavaScript, so we'll configure the loader in `webpack/common.js` to handle all `.js` files, save those
+in `node_modules`, which are already assumed to be ready for distribution to a browser:
 
 !EDIT_FILE webpack/common.js /* */
 {
@@ -60,12 +61,12 @@ Configure the loader in `webpack/common.js`:
 !END EDIT_FILE
 
 Of course, Babel doesn't automatically do anything, so we need more configuration and more modules.  Babel has the concept of
-presets, but of course, none of them are actually preset.  We'll use the recommend “env” preset, which means “generally do the
+presets, but of course, none of them are actually pre-set.  We'll use the recommend “env” preset, which means “generally do the
 right thing without having to configure stuff”, which is a godsend, so we'll take it.
 
 !SH yarn add babel-preset-env
 
-Now, create a config file for Babel in the root directory (yup) called `.babelrc`:
+Now, create a config file for Babel in the root directory (yup) called `.babelrc` (note that this file is JSON and not JavaScript, so it's far easier to mess up, and you can be sure you won't get a good error message if you do):
 
 !CREATE_FILE{language=json} .babelrc
 {
@@ -141,14 +142,14 @@ Now, configure it in `spec/karma.conf.js`:
 {
   "match": "      '**/*.spec.js': [ 'webpack', 'sourcemap' ]",
   "replace_with": [
-    "          '**/*.spec.js': [ 'webpack', 'sourcemap', 'babel' ]"
+    "      '**/*.spec.js': [ 'webpack', 'sourcemap', 'babel' ]"
   ]
 }
 !END EDIT_FILE
 
 Note that the addition of `'babel'` to the preprocessors must come *at the end* or it doesn't work.  Why?  Who knows?
 
-If your test file still has the error form before, or if you introduce one, you'll get a lovely new surprise - source maps no
+If your test file still has the error from before, or if you introduce one, you'll get a lovely new surprise - source maps no
 longer work.
 
 While they do work in our production code, we no longer get the ability to see where in our test something failed.  Them's the
@@ -156,15 +157,17 @@ breaks and it's currently not fixable in this setup.  Changing the order of the 
 setting options for babel.  Even debugging this is difficult, because of how poorly all these tools are designed and how opaque
 their interoperability is.
 
+<aside class="pullquote">Source maps no longer work</aside>
+
 Such a letdown.  And it seems like a pretty fitting end to our journey.
 
 ## Where We Are
 
 It's not all bleak.  We started with some basic needs to manage JavaScript and Webpack has met them, and more.  We can write
 modular JavaScript, handle both development and production, run tests, and even use a new language.  What's better, the amount of
-configuration we had to add wasn't that great.
+configuration we had to add wasn't that large.
 
-! SH wc -l webpack.config.js webpack/*.js spec/karma.conf.js
+!SH wc -l webpack.config.js webpack/*.js spec/karma.conf.js
 
 That's less than 100 lines total, and we have a completely workable development environment.
 
@@ -173,6 +176,6 @@ confident in your needs as a developer and comfortable pointing out when availab
 mean the people that put their blood, sweat, and tears into them are bad people, but designing build tools is hard, and the
 JavaScript ecosystem has the widest variety of developers ever, so it's hard to please everyone.
 
-That said, I want to spend the last chapter discussing the design decisions that I believe make this entire thing do difficult to
+That said, I want to spend the last chapter discussing the design decisions that I believe make this entire thing so difficult to
 deal with and what might make it all work better.  These are ways of thinking that help you build any application, even if it's
-not as build tool.
+not a build tool.

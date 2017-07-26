@@ -113,7 +113,7 @@ If we open up `dev/index.html` in your browser, the CSS isn't being applied.  BU
 
 There is a loader called the style-loader that would dynamically create a `<style>` tag in our DOM and put the CSS in there, but that's no good.  We want the browser to load CSS separately, so it can download both the CSS *and* the JS in parallel.
 
-We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [ExtractTextPlugin](https://webpack.js.org/plugins/extract-text-webpack-plugin/).  Despite it's generic name, it appears created to solve this specific problem.
+We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [ExtractTextPlugin](https://webpack.js.org/plugins/extract-text-webpack-plugin/).  Despite its generic name, it appears created to solve this specific problem.
 
 !SH yarn add extract-text-webpack-plugin  -D
 
@@ -180,7 +180,7 @@ And, for `production.js`:
 }
 !END EDIT_FILE
 
-With this in place, we can remove the `<link` tag we put in:
+With this in place, we can remove the `<link>` tag we put in:
 
 !EDIT_FILE html/index.html <!-- -->
 {
@@ -217,7 +217,7 @@ Let's bring in a third-party CSS library to make sure that works as expected.
 
 ## Third-party CSS Libraries
 
-I don't like writing CSS.  I *do* like using re-usable/functional CSS and not snowflake/“semantic” CSS, which is why we're going to use [Tachyons](http://tachyons.io/). If I were to write a “What problem does it solve?” for functional CSS like Tachyons, I'd just point you to [this article by Tachyons' author Adam Morse](http://mrmrs.io/writing/2016/03/24/scalable-css/), which explains it.
+I don't like writing CSS.  I *do* like using re-usable/functional CSS and not snowflake/“semantic” CSS, which is why we're going to use [Tachyons](http://tachyons.io/). If I were to write a “What problem does it solve?” for functional CSS like Tachyons, I'd just point you to [this article by Tachyons' author Adam Morse](http://mrmrs.github.io/writing/2016/03/24/scalable-css/), which explains it.
 
 First, let's bring in tachyons:
 

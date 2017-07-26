@@ -31,7 +31,7 @@ Once this is done, run it with the `--open` flag, and your application will pop 
 
 This will compile your app and load it, so it will take the same 4+ seconds as before.
 
-Next, open up `css/styles.css` in your editor, and arrange your windows so that you can see both your editor *and* your browser.  Make a change to the CSS, and viola, your browser refreshes with that change. Repeat with `html/index.html` and `js/index.js`.  To too bad.
+Next, open up `css/styles.css` in your editor, and arrange your windows so that you can see both your editor *and* your browser.  Make a change to the CSS, and viola, your browser refreshes with that change. Repeat with `html/index.html` and `js/index.js`.  Not too bad.
 
 The refresh isn't as fast as we'd like, but it's still not too bad.  You could easily open up your code editor on one side of the screen, and your browser on the other, and get to work.
 
@@ -44,7 +44,7 @@ What about tests?
 When we learned about Karma, we gave it the `--single-run` flag.  We later saw that omitting this starts up a server you can use
 to run your tests in any  browser.  This server also watches for changes in our code and tests and re-runs them automatically.
 
-```
+```shell
 > $(yarn bin)/karma start spec/karma.conf.js
 Hash: e0bdc8cc97632b01d813
 Version: webpack 3.0.0
@@ -83,8 +83,4 @@ re-run without doing anything.  Nice!
 What this means is that by running Karma all the time, you can work quickly with a TDD flow, and when you need to switch to
 in-browser design or tweaking, running the Webpack dev server lets you work quickly there, too.
 
-There's one last thing we need to look into, and that's the ability to use a better language than JavaScript and a better
-styling system than CSS.  Since Webpack is essentially compiling our JavaScript and CSS, it stands to reason that if we wanted
-to use something like TypeScript or ES2015, or write CSS using Sass, it should be able to handle that.
-
-Let's tackle code first.
+There's one last thing we need to look into, and that's the ability to use a better language than JavaScript Since Webpack is essentially compiling our JavaScript and CSS, it stands to reason that if we wanted to use something like TypeScript or ES2015, it should be able to handle that.

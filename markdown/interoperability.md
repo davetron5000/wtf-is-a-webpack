@@ -14,13 +14,16 @@ Two pieces of software interoperate when they can work together to solve a large
 saw this time and time again in our journey.  We saw that Jasmine provided a library to write tests, but lacked the ability to load and execute our code.  Karma could load our code, but provides no way to write tests.  Webpack provides the ability to load CSS, but only with the  `ExtractTextPlugin` could we write it to a file.
 
 Webpack and Karma's interoperability is completely opaque to the user.  This means that you have *no* way to know how the tools
-are working or even observe them working together without debugging into the source code.  As a tool developer, the situation is difficult, because everything is very custom.  In Webpack's case, each type of integration is different.  To write your own loader, you [implement a nebulous interface](https://webpack.js.org/development/how-to-write-a-loader/).  Writing a plugin is [highly complex](https://webpack.js.org/development/how-to-write-a-plugin/).
+are working or even observe them working together without debugging into the source code.  As a tool developer, the situation is difficult, because everything is very custom.  In Webpack's case, each type of integration is different.  To write your own loader, you [implement a nebulous interface](https://webpack.js.org/development/how-to-write-a-loader/).  Writing a plugin is [highly complex](https://webpack.js.org/development/how-to-write-a-plugin/).  Any tool that must be a part of Webpack or Karma, must have a plugin for each.
 
 The JavaScript ecosystem is rife with this sort of opaque interoperability.  Each tool has its own created-from-first-principles plugin system.  This leads to meta-plugins like [gulp-grunt](https://www.npmjs.com/package/gulp-grunt) that allows plugins written for Gulp to be used in Grunt (or vice versa—it doesn't matter).
 
 As a plugin or tool developer, no lessons learned working with one tool can be applied to another.  Worse, though, is for users
-of these tools.  Because the behavior of these tools is totally opaque, and any ability to extend them requires making those
-extension points available explicitly, it can be very difficult to figure out how to solve a problem with these tools.
+of these tools.  Because the behavior of these tools is totally opaque, and any extension points must be explicitly provided by
+the tool creator, it's difficult to figure out how to use them solve the problem in front of you.  Most people resort to just
+being told the answer, because figuring it out is difficult.
+
+<aside class="pullquote">No lessons learned working with one tool can be applied to another</aside>
 
 To make matters more confusing, tools often provide built-in functions for some common things, but not others.  In Webpack, we
 can configure source maps without a plugin, we can configure minification with a built-in plugin, but we cannot process CSS
@@ -28,7 +31,7 @@ without a manually-installed loader.  And then there's Karma, which, as mentione
 default.
 
 These tools all seem to be confused about their scope.  Are they small, single-purpose tools, or monolithic integrated systems?
-They are almost all hybrids that make extension difficult or impossible, and have terrible _developer erogonomics_.
+They are almost all hybrids.  They attempt to be extensible, but in opaque, inconsistent, or undocumented ways, while also being monolithic, but with terrible _developer erogonomics_.
 
 ## Developer Ergonomics
 
@@ -68,7 +71,7 @@ complete end-to-end experience for a complete use case.  I'll call this the “R
 approach (often called _opinionated software_).
 
 I hope it's obvious that Webpack and friends don't fit either of these categories.  Neither provides an end-to-end solution, but
-neither is special purpose and focused enough to integration into an arbitrary workflkow.
+neither is special purpose and focused enough to integrate into an arbitrary workflkow.
 
 Let's explore how we might solve our problems with tools designed around either of these approaches.
 
@@ -76,14 +79,17 @@ Let's explore how we might solve our problems with tools designed around either 
 
 The UNIX way is to have many small single-purpose tools that interoperate openly and transparently.  For example, if you want to
 search a file for a string, you'd use `grep`.  `grep` outputs lines that match a string.  If you then want to extract data from
-those lines, you'd use `cut` or `sed`.  What you wouldn't do is add a feature to `grep` that does this.  You also wouldn't add a
-plugin system to `grep`.
+those lines, you'd use `cut` or `sed`.  What you _wouldn't_ do is add a feature to `grep` that does this.  And you _definitely_ would not add a plugin system to `grep`, because it already has one via text.
 
-The way these tools interoperate is via text: each line of text is considered a record, and all operations are per line.
+UNIX command-line tools'  plugin system is text: each line is a record, and all tools operate on lines of text.  The creator of
+`sort` did not have to think about how one might determine the most frequently-repeated line in a file; instead they just needed
+to allow sorting by numbers.  `cut` and `uniq` can take care of the rest.
 
-Another way to do this is per _file_.  A common C compiler configuration acts as a pipeline, with single-purpose tools
-transforming one or more files into an analogous set of files.   To create an executable from a C program, you must pre-process
-the C program to produce processed C source, then compile the C file into an _object file_, which is basically the assembly version of the C source.  You must then link the objects together to produce an executable.
+Another simple means of interoperation is a _file_.  We've seen this countless times in our journey, where we have source files
+that are processed to produce output files.  This sort of pipeline has existed for decades.  C compilers work this way, with each
+tool taking one format as input, and producing another as output.  C source code is pre-processed to execute all the `#if` and
+`#include` statements.  This processed source is compiled down to assembly, into what is called an _object file_.  Several object
+files are then collected and linked together to produce a final executable.
 
 Each file output by one part of the pipeline feeds the next.
 
@@ -97,16 +103,21 @@ digraph c_toolchain {
   OneO [ label="out/foo.o" ]
   TwoO [ label="out/main.o" ]
   Exe  [ label="main" ]
+  cpp  [ shape="rect" ]
+  cc  [ shape="rect" ]
+  ld  [ shape="rect" ]
 
-  One  -> OneP [ label="cpp" fontname="Courier New" ]
-  OneH -> OneP [ label="cpp" fontname="Courier New" ]
-  Two  -> TwoP [ label="cpp" fontname="Courier New" ]
+  One  -> cpp
+  cpp -> OneP
+  OneH -> cpp
+  Two  -> cpp -> TwoP
 
-  OneP -> OneO [ label="cc" fontname="Courier New" ]
-  TwoP -> TwoO [ label="cc" fontname="Courier New" ]
+  OneP -> cc -> OneO
+  TwoP -> cc -> TwoO
 
-  OneO -> Exe  [ label="ld" fontname="Courier New" ]
-  TwoO -> Exe  [ label="ld" fontname="Courier New" ]
+  OneO -> ld
+  TwoO -> ld
+  ld -> Exe
 }
 !END GRAPHVIZ
 
@@ -116,26 +127,34 @@ was created by replace `cpp` with a different program that pre-processed a C++ f
 !GRAPHVIZ cpp C++ Compiler Build Pipeline
 digraph cpp_toolchain {
   OneH [ label="src/foo.h" ]
-  One  [ label="src/foo.cpp" ]
-  Two  [ label="src/main.cpp" ]
+  One  [ label="src/foo.cxx" ]
+  Two  [ label="src/main.cxx" ]
   OneP [ label="pp/foo.c" ]
   TwoP [ label="pp/main.c" ]
   OneO [ label="out/foo.o" ]
   TwoO [ label="out/main.o" ]
   Exe  [ label="main" ]
+  cpp  [ shape="rect", label="c++" ]
+  cc  [ shape="rect" ]
+  ld  [ shape="rect" ]
 
-  One  -> OneP [ label="c++" fontname="Courier New" ]
-  OneH -> OneP [ label="c++" fontname="Courier New" ]
-  Two  -> TwoP [ label="c++" fontname="Courier New" ]
-  OneP -> OneO [ label="cc" fontname="Courier New" ]
-  TwoP -> TwoO [ label="cc" fontname="Courier New" ]
-  OneO -> Exe  [ label="ld" fontname="Courier New" ]
-  TwoO -> Exe  [ label="ld" fontname="Courier New" ]
+  One  -> cpp
+  cpp -> OneP
+  OneH -> cpp
+  Two  -> cpp -> TwoP
+
+  OneP -> cc -> OneO
+  TwoP -> cc -> TwoO
+
+  OneO -> ld
+  TwoO -> ld
+  ld -> Exe
 }
+
 !END GRAPHVIZ
 
-The `cpp` program didn't need a plugin system because it interoperated in a clean and transparent way.  In fact, the designers of
-`cpp` didn't have to be consulted to do this.
+The `cc` program didn't need a plugin system because it interoperated in a clean and transparent way.  In fact, the designers of
+`cc` didn't have to be consulted in order to try out C++.
 
 What's more of a benefit to this approach is that each of these tools can be more easily maintained because they do fewer things.
 The maintainers of `ld` only need to be worry about taking in object files and producing an executable.  It doesn't need to worry
@@ -156,111 +175,155 @@ digraph js_toolchain {
   TY          [ label="node_modules/tachyons/index.css" ]
   HTML        [ label="html/index.html"]
 
+  BundleJS [label="bundle_js" shape="rect"]
+  PackJS   [label="pack_js" shape="rect"]
+  PackCSS   [label="pack_css" shape="rect"]
+  PackHTML   [label="pack_html" shape="rect"]
+
   Bundle    [ label="site/bundle.js" ]
   CSSBundle [ label="site/css.css" ]
   Index     [ label="site/index.html"]
 
-  Preview     -> LocalBundle [label="bundle_js" fontname="Courier New"]
-  Main        -> LocalBundle[label="bundle_js" fontname="Courier New"]
+  Preview     -> BundleJS
+  Main        -> BundleJS
+  BundleJS -> LocalBundle
 
-  LocalBundle -> Bundle [label="pack_js"  fontname="Courier New"]
-  MD          -> Bundle [label="pack_js"  fontname="Courier New"]
+  LocalBundle -> PackJS
+  MD          -> PackJS
+  PackJS -> Bundle
 
-  CSS         -> CSSBundle[label="pack_css" fontname="Courier New"]
-  TY          -> CSSBundle[label="pack_css" fontname="Courier New"]
+  CSS         -> PackCSS
+  TY          -> PackCSS
+  PackCSS -> CSSBundle
 
-  HTML        -> Index[label="pack_html" fontname="Courier New"]
-  CSSBundle   -> Index[label="pack_html" fontname="Courier New"]
-  Bundle      -> Index[label="pack_html" fontname="Courier New"]
+  HTML        -> PackHTML
+  CSSBundle   -> PackHTML
+  Bundle      -> PackHTML
+  PackHTML -> Index
 }
+
 !END GRAPHVIZ
 
-I've invented the tools to do this, but each is straightforward in its scope:
+None of these tools exist, but imagine how they might work and what they might do:
 
 * `bundle_js` takes JS code we've written, and follows local `import` statements to produce a file called the local bundle.  This
 file still has imports for third party libraries.
 * `pack_js` brings in those third party libraries to create our final bundle
 * `pack_css` does the same thing with CSS
-* `pack_html` takes an HTML template as input, as well as a CSS and JS bundler, and produces a shippable `.html` files we can
+* `pack_html` takes an HTML template as input, as well as a CSS and JS bundle, and produces a shippable `.html` files we can
 serve up.
 
 Think back to the various problems we were solving.  If we want to write ES2015 instead of regular JavaScript, we just need a compiler that takes ES2015 as input and produces JavaScript as output.
 
 !GRAPHVIZ js2015 Adding ES2015 Support to JS Build Pipeline
-digraph js_toolchain {
+digraph es6_toolchain {
 
-  Preview6    [ label="js/markdownPreviewer.es6"]
-  Main6       [ label="js/index.js"]
+  PreviewSrc  [ label="es6/markdownPreviewer.es6"]
   Preview     [ label="js/markdownPreviewer.js"]
   MD          [ label="node_modules/markdown/index.js"]
   LocalBundle [ label="work/bundle.js" ]
-  Main        [ label="js/index.js"]
+  MainSrc     [ label="js/index.es6"]
+  Main        [ label="es6/index.js"]
   CSS         [ label="css/styles.css" ]
   TY          [ label="node_modules/tachyons/index.css" ]
   HTML        [ label="html/index.html"]
-  Bundle      [ label="site/bundle.js" ]
-  CSSBundle   [ label="site/css.css" ]
-  Index       [ label="site/index.html"]
 
-  Preview6    -> Preview     [ label="es2015c"   fontname="Courier New"]
-  Main6       -> Main        [ label="es2015c"   fontname="Courier New"]
-  Preview     -> LocalBundle [ label="bundle_js" fontname="Courier New"]
-  Main        -> LocalBundle [ label="bundle_js" fontname="Courier New"]
-  LocalBundle -> Bundle      [ label="pack_js"   fontname="Courier New"]
-  MD          -> Bundle      [ label="pack_js"   fontname="Courier New"]
-  CSS         -> CSSBundle   [ label="pack_css"  fontname="Courier New"]
-  TY          -> CSSBundle   [ label="pack_css"  fontname="Courier New"]
-  HTML        -> Index       [ label="pack_html" fontname="Courier New"]
-  CSSBundle   -> Index       [ label="pack_html" fontname="Courier New"]
-  Bundle      -> Index       [ label="pack_html" fontname="Courier New"]
+  BundleJS [label="bundle_js" shape="rect"]
+  PackJS   [label="pack_js" shape="rect"]
+  PackCSS   [label="pack_css" shape="rect"]
+  PackHTML   [label="pack_html" shape="rect"]
+  ES6   [label="es2015c" shape="rect"]
+
+  Bundle    [ label="site/bundle.js" ]
+  CSSBundle [ label="site/css.css" ]
+  Index     [ label="site/index.html"]
+
+  PreviewSrc  -> ES6
+  MainSrc     -> ES6
+  ES6 -> Preview
+  ES6 -> Main
+  Preview     -> BundleJS
+  Main        -> BundleJS
+  BundleJS -> LocalBundle
+
+  LocalBundle -> PackJS
+  MD          -> PackJS
+  PackJS -> Bundle
+
+  CSS         -> PackCSS
+  TY          -> PackCSS
+  PackCSS -> CSSBundle
+
+  HTML        -> PackHTML
+  CSSBundle   -> PackHTML
+  Bundle      -> PackHTML
+  PackHTML -> Index
 }
 !END GRAPHVIZ
 
 Notice how almost nothing upstream changed—we simply fed generated input to the toolchain from the output of another tool, and
 that tool's function is dead simple - turn ES2015 into vanilla JS.
 
-Think about how we added support for ES2015 with Webpack?  We inserted something inside Webpack's configuration and had to make a
-similar (but different) change to our testing setup.  What about testing in this UNIX world?
+Think about how we added support for ES2015 with Webpack. We inserted something inside Webpack's configuration and had to make a
+similar (but different) change to our testing setup.  In the UNIX world, it's much simpler:
 
 !GRAPHVIZ jstest Adding testing support to JS Build Pipeline
 digraph js_toolchain {
 
-  Preview6    [ label="js/markdownPreviewer.es6"]
-  Main6       [ label="js/index.js"]
+  PreviewSrc  [ label="es6/markdownPreviewer.es6"]
   Preview     [ label="js/markdownPreviewer.js"]
   MD          [ label="node_modules/markdown/index.js"]
   LocalBundle [ label="work/bundle.js" ]
-  Main        [ label="js/index.js"]
+  MainSrc     [ label="js/index.es6"]
+  Main        [ label="es6/index.js"]
   CSS         [ label="css/styles.css" ]
   TY          [ label="node_modules/tachyons/index.css" ]
   HTML        [ label="html/index.html"]
-  MSTest      [ label="spec/markdownPreviewer.spec.js"]
-  TestLib     [ label="node_modules/testlib/index.js"]
-  Bundle      [ label="site/bundle.js" ]
-  CSSBundle   [ label="site/css.css" ]
-  Index       [ label="site/index.html"]
-  TestBundle  [ label="spec/test_bundle.js"]
-  TestResult  [ label="Test Results"]
+  Tests [label="spec/markdownPreviewer.spec.js" penwidth=2]
 
-  Preview6    -> Preview     [ label="es2015c" fontname="Courier New"]
-  Main6       -> Main        [ label="es2015c" fontname="Courier New"]
-  Preview     -> LocalBundle [ label="bundle_js" fontname="Courier New"]
-  Main        -> LocalBundle [ label="bundle_js" fontname="Courier New"]
-  LocalBundle -> Bundle      [ label="pack_js"  fontname="Courier New"]
-  MD          -> Bundle      [ label="pack_js"  fontname="Courier New"]
-  CSS         -> CSSBundle   [ label="pack_css" fontname="Courier New"]
-  TY          -> CSSBundle   [ label="pack_css" fontname="Courier New"]
-  HTML        -> Index       [ label="pack_html" fontname="Courier New"]
-  CSSBundle   -> Index       [ label="pack_html" fontname="Courier New"]
-  Bundle      -> Index       [ label="pack_html" fontname="Courier New"]
-  Bundle      -> TestBundle  [ label="pack_js" fontname="Courier New"]
-  MSTest      -> TestBundle  [ label="pack_js" fontname="Courier New"]
-  TestLib     -> TestBundle  [ label="pack_js" fontname="Courier New"]
-  TestBundle  -> TestResult  [ label="test_js" fontname="Courier New"]
+  BundleJS [label="bundle_js" shape="rect"]
+  PackJS   [label="pack_js" shape="rect"]
+  PackCSS   [label="pack_css" shape="rect"]
+  PackHTML   [label="pack_html" shape="rect"]
+  ES6   [label="es2015c" shape="rect"]
+  ES62  [label="es2015c" shape="rect"]
+  TestRun [label="testrun" shape="rect" penwidth=2]
+  Results [label="Test Results" shape="note" penwidth=2]
+
+  Bundle    [ label="site/bundle.js" ]
+  CSSBundle [ label="site/css.css" ]
+  Index     [ label="site/index.html"]
+
+  PreviewSrc  -> ES6
+  MainSrc     -> ES6
+  ES6 -> Preview
+  ES6 -> Main
+  Preview     -> BundleJS
+  Main        -> BundleJS
+  BundleJS -> LocalBundle
+
+  LocalBundle -> TestRun[ penwidth=2]
+  Tests -> ES62[ penwidth=2 ]
+  ES62 -> TestRun[ penwidth=2]
+
+  TestRun -> Results
+
+  LocalBundle -> PackJS
+  MD          -> PackJS
+  PackJS -> Bundle
+
+  CSS         -> PackCSS
+  TY          -> PackCSS
+  PackCSS -> CSSBundle
+
+  HTML        -> PackHTML
+  CSSBundle   -> PackHTML
+  Bundle      -> PackHTML
+  PackHTML -> Index
 }
 !END GRAPHVIZ
 
-Notice again that we don't change that much. Notice that we can remove ES2015 from only one place, and the entire downstream
+Notice again that we don't change that much. Notice that we can remove ES2015, and the entire downstream
 toolchain still works properly.  You can start to imagine how we might extend this.  Source Maps could be produced by another
 tool and consumed by `pack_html`.  Minification could be added later in the toolchain.
 
@@ -268,18 +331,16 @@ As a tool developer, this is much simpler - you take files as input, and produce
 contract. The scope of any one tool is also small, meaning its easier to understand and maintain.  You avoid all sorts of weird
 interactions because the contract between steps is well-defined and simple.
 
-As a developer, this is much easier to understand. Each thing feeds the next in an obvious way. If one part of the toolchain is
-buggy, it's immediately obvious which one.  Did `es2015_c` produce invalid JS?  If so, that's your problem.  Did it produced
-valid JS, but `bundle_js` can't handle it?  *There's* the problem.
+As a developer, this is also much easier to understand. Each thing feeds the next in an obvious way. If one part of the toolchain is buggy, it's immediately obvious which one, **and** you have an artifact it produced to share with the developers to figure out what went wrong—you don't have to put your entire project up on GitHub.
 
 There are other benefits to this approach.  For example, there's no need to recompile CSS if JS has changed.  There's no need to
 minify JS if just running tests.  By smartly managing the dependencies, our build pipeline can be fast, but also transparent.
 
 Of course, you would need something to orchestrate this pipeline, but there are many many tools that do this already, including the venerable `make`. This additionally separates concerns by isolating small bits of functionality.  The orchestration system only has to worry about orchestration and not what is being orchestrated.
 
-The main downside to the Unix Way is that you must cobble together your own toolchain every time (of course, this is how it is in JS-land already, but you *don't* get small, self-contained tools).  You also have to make a lot of uninteresting decisions, such as where files should go.
+The main downside to the Unix Way is that you must cobble together your own toolchain every time (of course, this is how it is in JS-land already, but you *don't* get the benefits of small, self-contained tools).  You also have to make a lot of uninteresting decisions, such as where files should go.
 
-The counter to this, which addresses this specific tradeoff is to do the things The Rails Way.
+The counter to this, which addresses this specific tradeoff, is to do the things The Rails Way.
 
 ### The Rails Way
 
@@ -308,13 +369,17 @@ Suppose the system we set up worked this way?  What would that look like?
 ```
 > wp new markdown-previewer
 js/index.es6 created
+js/markdownPreviewer.es6 created
 html/index.html created
 css/styles.css created
+spec/markdownPreviewer.spec.es6 created
 > wp serve # index.es6 compiled, 
            # shoved into index.html 
            # with styles.css and 
            # avalable on port 8080
            # Stuff also recompiles as it changes
+
+> wp test  # runs all the tests
 ```
 
 Many existing boilerplates work like this, but the difference here is:
@@ -337,10 +402,11 @@ The benefits to such a framework are many:
 
 * Because the framework is integrated, and not cobbling together existing tools (as most JS boilerplates do), it can be tested,
   designed, and evolved as one unit.  No oddball interactions from disparate dev teams working on incompatible tools.
-* Developers can go from 0 to running code in no time, with guarantees that everything works.
+* Developers can go from 0 to running code in no time, with guarantees that everything works.  Remember how we essentially had to
+install and set up everything twice, once for Webpack and once for Karma?
 * You can immediately start writing code and don't have to make decisions about where files should go or what sort of configuration you need.
-* Every project using this framework as the same shape, meaning you can jump into existing projects with a lot of context learned
-from the last one.
+* Every project using this framework has the same shape, meaning you can jump into existing projects with a lot of context learned
+from the last one. Things learned from one project apply to the next.
 
 The downsides are flexibility.  If the defaults that are set up don't work for your use-case, it's hard to change them. This also
 suffers the same problem as Webpack when there are internal failures—they are opaque and essentially impossible to debug.  But,
@@ -363,3 +429,7 @@ For me, the UNIX Way is the approach this ecosystem should take.  The flexibilit
 agile with respect to workflows and best practices.  It seems highly unlikely that any focused group or individual could create a
 universally applicable Rails Way of working with JS.  The UNIX Way also satisfies all the boilerplate fans and would result in an
 ecosystem where many could contribute, and tools would be easy to understand.
+
+Take these lessons with you as you design software.  If you aren't committed to developer or user ergonomics, if you aren't
+committed to making a fully integrated system that “just works”, design your system around small, single-function tools that have
+a clear means of interoperation.  You can always bring them together, but you can never tear them apart.

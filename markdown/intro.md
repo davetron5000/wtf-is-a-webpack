@@ -39,7 +39,7 @@ The simplest way is to use a `<script>` tag for each file:
 This is hard to maintain, so another way is to concatenate all the files together into one bundle during the build of your
 application, and deploy just that bundle to the user's browser.
 
-```
+```shell
 > find js -name \*.js \
           -exec cat {} \; >> bundle.js
 ```
@@ -123,17 +123,7 @@ have to ignore.  But it should work, and you can verify it like so:
 
 !SH $(yarn bin)/webpack --version
 
-<aside class="sidebar">
-<h1>What is <code>$(yarn bin)</code?</h1>
-<p>
-The `$(yarn bin)` bit is a shell invocation that knows where `yarn` has installed binaries (In UNIX shells `$(some_command)` runs `some_command` and puts its output on the command line—try `yarn bin` and you'll see what I mean).  In this case, the path is `node_modules/.bin`, which you don't want to ever have to type, but you definitely want to run things out of there. 
-</p>
-<p>
-If you just start typing <code>yarn</code>, your system might have some older, more busted version of Webpack installed in a path outside your project, and you'll get strange failures.  Because the JavaScript ecosystem favors silent failures and obfuscated error messages, you need to take extra care to know what you are executing.  Thus, <code>$(yarn bin)</code>
-</p>
-</aside>
-
-<aside class="pullquote">You've now taken your first step into a larger world, which is rife with version incompatibilities, masked or incorrect error messages, and inconsistent behavior.</aside>
+<aside class="pullquote">You've now taken your first step into a…world…rife with version incompatibilities, masked…error messages, and inconsistent behavior</aside>
 
 You've now taken your first step into a larger world, which is rife with version incompatibilities, masked or incorrect error messages, and inconsistent behavior, all so you can try to make your life easier while using one of the worst programming languages ever designed!  Webpack is one of the least bad things you'll deal with.
 

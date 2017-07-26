@@ -1,15 +1,8 @@
-* Finish Content
-  * Hot Module Reloading
-  * Code Splitting
-  * Tree Shaking
-  * Side rant on the overall poor design
 * Styling
   * Expand/collapse session output
   * Explicitly highlight changed code
-  * TOC that's sticky
+  * Convert to prism
 * Technology
-  * Tests
   * Downloadable code at each step
-  * Smarter rebuilds
   * Sidebars as a formal element
   * Index

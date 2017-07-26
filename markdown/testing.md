@@ -279,6 +279,10 @@ But you'll get an error about `fs` which you've never heard of and didn't ask to
 In my experience, when things Completely Fail to Work at Even a Basic Level™, it tells me that I've made the wrong choice at some
 level higher than the code.
 
+<aside class="pullquote">
+ When things Completely Fail to Work at Even a Basic Level™…I've made the wrong choice
+</aside>
+
 In this case, it's our choice of test runner.  Note that I didn't say test _framework_, but test _runner_.  Why are these even
 different things?  What kind of test framework can't run tests?
 
@@ -354,6 +358,10 @@ has to be.
 
 On the one hand, this is terrible, because anything involving a browser will be incredibly slow and clunky.  But, on the other
 hand, our code will only ever run in a browser, so as good developers that's technically the right place to test it.
+
+<aside class="pullquote">
+Our code will only ever run in a browser, so…that's technically the right place to test it
+</aside>
 
 PhantomJS is a browser that runs headlessly, meaning it's the only way to run our tests, with Karma, on the command line.
 
