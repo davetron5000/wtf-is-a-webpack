@@ -38,15 +38,16 @@ class HaveCommandMatchData
         result.select { |(_,expected,got)|
           expected != got
         }.map { |(method,expected,got)|
-          "#{method} returned '#{got}' (#{got.class}), but was expecting '#{expected}' (#{expected.class})"
-        }.join(", ")
-      }
+          "#{method} returned a #{got.class}:\n#{got}\nwas expecting a #{expected.class}:\n#{expected}"
+        }.join("\n\n")
+      }.join("\n")
     end
   end
 
 end
 RSpec::Matchers.define :have_command do |klass,options|
   match do |queue|
+    options ||= {}
     data = HaveCommandMatchData.new(klass,options,queue)
     data.matches?
   end

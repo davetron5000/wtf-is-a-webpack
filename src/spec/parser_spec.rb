@@ -59,7 +59,7 @@ RSpec.describe Bookdown::Parser do
           parser.parse(input: input, output: output)
 
           results = File.read(output)
-          expect(results).to eq("```\n> echo 'this is a thing'\nthis is a thing\n```\n")
+          expect(results).to eq("```shell\n> echo 'this is a thing'\nthis is a thing\n```\n")
         end
       end
     end

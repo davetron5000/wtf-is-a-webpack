@@ -40,17 +40,20 @@ module Bookdown
       clear_working_dirs(book)
 
       force_reparse = false
-      each_chapter_config(book) do |chapter|
-        result = parse_chapter(book,chapter, force_reparse: force_reparse)
+      toc = Bookdown::TOC.new(markdown_dir: book.markdown_dir)
+      toc.each do |chapter|
+        renderable_chapter = RenderableChapter.new(chapter,book.markdown_dir,book.parsed_markdown_dir)
+        result = parse_chapter(book,renderable_chapter, force_reparse: force_reparse)
         if result && !force_reparse
-          @logger.info "Chapter #{chapter.name} was re-parsed, forcing re-rendering and subsequent chapter reparsing"
+          @logger.info "Chapter #{renderable_chapter.name} was re-parsed, forcing re-rendering and subsequent chapter reparsing"
           force_reparse = true
         end
-        result = render_chapter(book,chapter)
+        result = render_chapter(book,renderable_chapter,toc)
       end
 
       process_css(book)
       copy_images(book)
+      copy_js(book)
     end
 
   private
@@ -73,12 +76,6 @@ module Bookdown
         File::Stat.new(markdown).mtime > File::Stat.new(output).mtime
     rescue Errno::ENOENT
       true
-    end
-
-    def each_chapter_config(book,&block)
-      Bookdown::TOC.new(markdown_dir: book.markdown_dir).each do |chapter|
-        block.(RenderableChapter.new(chapter,book.markdown_dir,book.parsed_markdown_dir))
-      end
     end
 
     def parse_chapter(book,chapter, force_reparse: false)
@@ -109,7 +106,7 @@ module Bookdown
       @file_utils.cp_r book.work_dir, chapter_saved_work
     end
 
-    def render_chapter(book,chapter)
+    def render_chapter(book,chapter,toc)
       template = book.html_dir / "chapter.html"
       html_file = book.site_dir / chapter.url
       if updated?([template,chapter.parsed_markdown_file], html_file)
@@ -117,6 +114,7 @@ module Bookdown
 
         renderer = Bookdown::Renderer.new
         renderer.render(chapter: chapter,
+                        toc: toc,
                         template: template,
                         parsed_markdown_file: chapter.parsed_markdown_file,
                         html_file: html_file)
@@ -146,6 +144,15 @@ module Bookdown
       end
       if book.images_dir.exist?
         @file_utils.cp_r book.images_dir, book.site_dir
+      end
+    end
+
+    def copy_js(book)
+      @file_utils.mkdir_p book.js_dir
+      Dir[book.js_src_dir / "*.js" ].each do |file|
+        next if [".",".."].include?(file)
+        @logger.info "Copying #{file} to #{book.js_dir}"
+        @file_utils.cp file,book.js_dir
       end
     end
 

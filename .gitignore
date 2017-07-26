@@ -6,3 +6,4 @@ site
 src/coverage
 .DS_Store
 *.sw?
+node_modules

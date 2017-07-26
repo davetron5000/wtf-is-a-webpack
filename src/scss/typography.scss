@@ -266,3 +266,61 @@ body footer {
     }
   }
 }
+
+aside.toc {
+  padding: $sz2;
+  [data-show='expanded'] {
+    display: none;
+  }
+  h1 {
+    font-size: $f8;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    a:hover {
+      background:none;
+    }
+    a small {
+      letter-spacing: 1px;
+      text-transform: lowercase;
+      display: inline;
+      font-size: $f8;
+      font-weight: 200;
+      text-decoration: underline;
+    }
+  }
+  div.toc {
+    @include header-font;
+    padding: $sz3;
+    margin: auto;
+    text-align: left;
+    width: 430px;
+  }
+  a, li {
+    @include header-font;
+    padding: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-weight: 400;
+  }
+  a {
+    text-decoration: none;
+    padding: 5px;
+    width: 100%;
+    display: block;
+  }
+  li {
+    font-size: $f8;
+    &.selected {
+      padding: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-weight: 200;
+    }
+  }
+}
+
+

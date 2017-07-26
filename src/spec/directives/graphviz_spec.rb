@@ -82,7 +82,7 @@ RSpec.describe Bookdown::Directives::Graphviz do
         )
         expect(queue).to have_command(
           Bookdown::Directives::Commands::PutsToFileIO,
-          string: "<a class=\"embiggen-image\" href=\"images/bar.png\"><img src=\"images/bar.png\" alt=\"Some Graph\"><br><small>Click to Embiggen</small></a>"
+          string: "<a href=\"images/bar.png\"><img src=\"images/bar.png\" alt=\"Some Graph\"><br><small>Click to embiggen</small></a>"
         )
       end
     end

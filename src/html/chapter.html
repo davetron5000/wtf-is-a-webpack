@@ -6,6 +6,7 @@
     <meta charset="utf-8">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
+    <script src="js/toc.js"></script>
   </head>
   <body>
     <header>
@@ -13,6 +14,29 @@
       <% if show_full_header %>
       <h2>Minimizing Pain while Learning Why Things Work</h2>
       <h3>by David Bryant Copeland AKA @davetron5000</h3>
+      <% end %>
+      <aside class="toc">
+        <div class="toc">
+          <h1>
+            <a data-show-hide href="#">Contents
+              <span data-show="compressed" data-display="inline">&#9758</span>
+              <small data-show="expanded" data-display="inline">(hide)</small>
+            </a>
+          </h1>
+          <div data-show="expanded" data-display="block">
+            <ol>
+              <% toc.each do |other_chapter| %>
+                <% if chapter == other_chapter %>
+                  <li class="selected"><%= other_chapter.title %></li>
+                <% else %>
+                  <li><a href="<%= other_chapter .url %>"><%= other_chapter.title %></a></li>
+                <% end %>
+              <% end %>
+            </ol>
+          </div>
+        </div>
+      </aside>
+      <% if show_full_header %>
       <h4>Updated <%= Time.now.strftime("%b %d, %Y") %></h4>
       <% end %>
     </header>

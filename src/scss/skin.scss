@@ -92,3 +92,18 @@ img {
     }
   }
 }
+aside.toc {
+  div.toc {
+    background: darken($paper-grey,10%);
+    color: lighten($ink-light,5%);
+    border-radius: $sz4;
+  }
+  a {
+    color: $ink;
+    text-decoration: none;
+    &:hover {
+      background: #f0f0f8;
+      border-radius: 2px;
+    }
+  }
+}

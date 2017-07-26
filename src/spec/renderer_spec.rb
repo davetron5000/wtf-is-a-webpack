@@ -48,6 +48,7 @@ RSpec.describe Bookdown::Renderer do
 
         subject.render(chapter: chapter,
                        template: template.path,
+                       toc: [],
                        parsed_markdown_file: parsed_markdown_file.path,
                        html_file: html_file.path)
 
@@ -63,6 +64,7 @@ RSpec.describe Bookdown::Renderer do
 
         subject.render(chapter: chapter,
                        template: template.path,
+                       toc: [],
                        parsed_markdown_file: parsed_markdown_file.path,
                        html_file: html_file.path)
 

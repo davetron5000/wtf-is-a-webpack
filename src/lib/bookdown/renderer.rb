@@ -15,8 +15,10 @@ module Bookdown
                                           highlight: true)
     end
 
+    # Args are used by scope of ERB rendering
     def render(chapter:,
                template:,
+               toc:,
                parsed_markdown_file:,
                html_file:)
       show_full_header = chapter.previous_chapter.nil?
