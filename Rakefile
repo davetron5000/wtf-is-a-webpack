@@ -15,7 +15,10 @@ task :default do
            markdown_dir: "markdown",
                work_dir: "work",
     parsed_markdown_dir: "parsed_markdown",
-               site_dir: Pathname("../what-problem-does-it-solve.com/site").expand_path / "webpack"
+               site_dir: Pathname("../what-problem-does-it-solve.com/site").expand_path / "webpack",
+                  title: "Webpack from Nothing",
+               subtitle: "Minimizing Pain while Learning Why Things Work",
+                 author: "David Bryant Copeland AKA @davetron5000"
   )
 
   logger = Logger.new(STDOUT)
