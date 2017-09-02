@@ -52,7 +52,7 @@ the breaking changes for you in a one-time pass.
 What about safety?  In software tools, safety means how easy it is to do the correct thing, or how hard it is to do the wrong
 thing or break your environment. [Django's schema migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/) is an
 example of ergonomic safety—it automatically adds foreign key constraints to your database (which, if you aren't familiar, is
-a simple and accepted way to ensure your database has correct data in it).
+a simple and common way to ensure your database has correct data in it).
 
 !AD "Think Broadly" "Learn how to solve bigger problems" http://theseniorsoftwareengineer.com "Buy Now $25" http://full-stack-rails.com/sweng-cover.png
 
@@ -91,7 +91,7 @@ Another simple means of interoperation is a _file_.  We've seen this countless t
 that are processed to produce output files.  This sort of pipeline has existed for decades.  C compilers work this way, with each
 tool taking one format as input, and producing another as output.  C source code is pre-processed to execute all the `#if` and
 `#include` statements.  This processed source is compiled down to assembly, into what is called an _object file_.  Several object
-files are then collected and linked together to produce a final executable.
+files are then collected and _linked_ together to produce a final executable.
 
 Each file output by one part of the pipeline feeds the next.
 
@@ -263,7 +263,7 @@ digraph es6_toolchain {
 }
 !END GRAPHVIZ
 
-Notice how almost nothing upstream changed—we simply fed generated input to the toolchain from the output of another tool, and
+Notice how almost nothing downstream changed—we simply fed generated input to the toolchain from the output of another tool, and
 that tool's function is dead simple - turn ES2015 into vanilla JS.
 
 Think about how we added support for ES2015 with Webpack. We inserted something inside Webpack's configuration and had to make a
@@ -272,25 +272,25 @@ similar (but different) change to our testing setup.  In the UNIX world, it's mu
 !GRAPHVIZ jstest Adding testing support to JS Build Pipeline
 digraph js_toolchain {
 
-  PreviewSrc  [ label="es6/markdownPreviewer.es6"]
+  PreviewSrc  [ label="es6/markdownPreviewer.es6" penwidth="3"]
   Preview     [ label="js/markdownPreviewer.js"]
   MD          [ label="node_modules/markdown/index.js"]
   LocalBundle [ label="work/bundle.js" ]
-  MainSrc     [ label="js/index.es6"]
+  MainSrc     [ label="js/index.es6" penwidth="3"]
   Main        [ label="es6/index.js"]
   CSS         [ label="css/styles.css" ]
   TY          [ label="node_modules/tachyons/index.css" ]
   HTML        [ label="html/index.html"]
-  Tests [label="spec/markdownPreviewer.spec.js" penwidth=2]
+  Tests [label="spec/markdownPreviewer.spec.es6"  penwidth="3"]
 
   BundleJS [label="bundle_js" shape="rect"]
   PackJS   [label="pack_js" shape="rect"]
   PackCSS   [label="pack_css" shape="rect"]
   PackHTML   [label="pack_html" shape="rect"]
-  ES6   [label="es2015c" shape="rect"]
-  ES62  [label="es2015c" shape="rect"]
-  TestRun [label="testrun" shape="rect" penwidth=2]
-  Results [label="Test Results" shape="note" penwidth=2]
+  ES6   [label="es2015c" shape="rect" penwidth="3"]
+  ES62  [label="es2015c" shape="rect" penwidth="3"]
+  TestRun [label="testrun" shape="rect" ]
+  Results [label="Test Results" shape="note" ]
 
   Bundle    [ label="site/bundle.js" ]
   CSSBundle [ label="site/css.css" ]
@@ -304,9 +304,9 @@ digraph js_toolchain {
   Main        -> BundleJS
   BundleJS -> LocalBundle
 
-  LocalBundle -> TestRun[ penwidth=2]
-  Tests -> ES62[ penwidth=2 ]
-  ES62 -> TestRun[ penwidth=2]
+  LocalBundle -> TestRun
+  Tests -> ES62
+  ES62 -> TestRun
 
   TestRun -> Results
 
@@ -333,7 +333,7 @@ As a tool developer, this is much simpler - you take files as input, and produce
 contract. The scope of any one tool is also small, meaning its easier to understand and maintain.  You avoid all sorts of weird
 interactions because the contract between steps is well-defined and simple.
 
-As a developer, this is also much easier to understand. Each thing feeds the next in an obvious way. If one part of the toolchain is buggy, it's immediately obvious which one, **and** you have an artifact it produced to share with the developers to figure out what went wrong—you don't have to put your entire project up on GitHub.
+As a developer, this is also much easier to understand. Each thing feeds the next in an obvious way. If one part of the toolchain is buggy, it's immediately obvious which one, **and** you have both an artifact given to it and the artifact it produced to share with the developers to figure out what went wrong—you don't have to put your entire project up on GitHub.
 
 There are other benefits to this approach.  For example, there's no need to recompile CSS if JS has changed.  There's no need to
 minify JS if just running tests.  By smartly managing the dependencies, our build pipeline can be fast, but also transparent.

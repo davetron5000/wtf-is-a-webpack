@@ -13,7 +13,7 @@ Ideally, we want the ability to:
 * execute a single test while we drive functionality in a module.
 * run tests without having to pop up a browser.
 
-There are many JavaScript testing frameworks, and even the definition of what a _testing framework_ is is unclear.  We'll start
+There are many JavaScript testing frameworks, though even the definition of what a _testing framework_ is is unclear.  We'll start
 by finding a reasonably complete library that allows us to write tests and assertions.
 
 [Jasmine][jasmine] fits that bill.  It's reasonably popular and easy to understand.
@@ -48,7 +48,7 @@ describe("canary", function() {
 });
 !END CREATE_FILE
 
-Hopefully, Jasmine's syntax and API is clear, but the idea is that we use `describe` to block of a bunch of tests we'll write,
+Hopefully, Jasmine's syntax and API is clear, but the idea is that we use `describe` to block off a bunch of tests we'll write,
 and then `it` for each test.  The idea is that these can be pieced together in some pidgen-like English that developers
 convince themselves is a specification.  It's silly, but works.
 
@@ -286,7 +286,7 @@ level higher than the code.
 In this case, it's our choice of test runner.  Note that I didn't say test _framework_, but test _runner_.  Why are these even
 different things?  What kind of test framework can't run tests?
 
-In they JavaScript ecosystem: pretty much all of them.
+In the JavaScript ecosystem: pretty much all of them.
 
 Because each project is a chance to artisnally hand-craft a small batch tool chain, and because the language we're using can't
 even agree on something basic like how to modularize code, we end up with lots of tools that cannot interoperate together at all.
@@ -383,7 +383,7 @@ browser.  The JavaScript ecosystem is all about choices.  Endless, endless choic
 
 With that done, we can now run our tests:
 
-!SH{nonzero} $(yarn bin)/karma start spec/karma.conf.js  --single-run
+!SH{nonzero} $(yarn bin)/karma start spec/karma.conf.js  --single-run --no-color
 
 The `--single-run` means "actually run the tests and report the results".  Without it, Karma sits there waiting for
 you to navigate to a web server it starts up that then runs the tests.  Trust me, this is the best it gets for now.
@@ -413,9 +413,9 @@ Now, we'll add it as a preprocessor and use `require` to bring in our existing W
 
 And wouldn't you know it, it works!
 
-!SH $(yarn bin)/karma start spec/karma.conf.js  --single-run
+!SH $(yarn bin)/karma start spec/karma.conf.js  --single-run --no-color
 
-I'm not going to lie, I was not expecting this to work at all, especially with this fairly minimal amount of configuration.  While it's not ergonomic or developer-friendly, it does work, and it was easy enough to figure out just be reading documentation.  Take that Medium thinkpieces!
+I'm not going to lie, I was not expecting this to work at all, especially with this fairly minimal amount of configuration.  While it's not ergonomic or developer-friendly, it does work, and it was easy enough to figure out just by reading documentation.  Take that Medium thinkpieces!
 
 Before we move on, let's wrap this up into a script inside `package.json`, because typing all this out sucks.
 
@@ -423,7 +423,7 @@ Before we move on, let's wrap this up into a script inside `package.json`, becau
 {
   "scripts": {
     "webpack": "$(yarn bin)/webpack --config webpack.config.js --display-error-details",
-    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run"
+    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run --no-color"
   }
 }
 !END PACKAGE_JSON

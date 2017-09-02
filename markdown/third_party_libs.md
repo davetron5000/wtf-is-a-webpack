@@ -55,7 +55,7 @@ Let's create our HTML first by replacing `dist/index.html` with the following:
 The app will work by listening to a submit event on that form and, when the button is pressed, render a preview of the
 markdown.  Rather than put this all in line, we'll make our own module that constructs this function.
 
-The function will use the `markdown` library to do the actual rendering, so the module we need to write, should take some
+The function will use the `markdown` library to do the actual rendering, so the module we need to write should take some
 inputs—where to find the source and where to render the preview, and produce a side-effect, namely the formatted markdown gets
 written to the part of the DOM where the preview should go.
 

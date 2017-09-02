@@ -3,15 +3,19 @@ JavaScript is not a great programming language.  Even with Webpack giving us the
 For example, we have to remember to use `===` everywhere or things get weird.  We also have to type the keyword `function` **a
 lot**. Scoping is a mess, we can't make constants, and it would be nice to define a proper class that handles `this`.
 
-[ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/) addresses all of this failures in JavaScript, but we can't run
+[ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/) addresses all of these failures in JavaScript, but we can't run
 it in a browser.  What we *can* do is translate it *to* JavaScript, allowing us to write modern code that still runs in a
 browser.
 
 ## Write Modern JavaScript, Ship Compatible JavaScript
 
-To do this with Webpack, we'll need to set up [Babel](https://babeljs.io), which will do the work.
+To do this with Webpack, we'll need to set up [Babel](https://babeljs.io), which will do the work.  Babel advertises itself as “a
+JavaScript compiler” which is also kindof what Webpack is.  The confusion lies around what is meant by the word “JavaScript”.  In
+Babel's case, it means “a newer version of JavaScript than your browser can produce”, which is *sort of* what Webpack can do as
+well.  Suffice it to say, Babel handles the newest version of JavaScript _most properly_, so we *do* need it to accomplish our
+goal of writing entirely in ES2015.
 
-First, though, let's write some ES2015.  Replace `js/markdownPreviewer.js` with this:
+Let's write some! Replace `js/markdownPreviewer.js` with this:
 
 !CREATE_FILE js/markdownPreviewer.js
 import { markdown } from "markdown";
@@ -34,7 +38,7 @@ export default {
 It's fairly similar, because we don't have that much, but note that we've changed from `function` to using [arrows](https://github.com/lukehoban/es6features#arrows) and we've changed our use of `var` to [`const`](https://github.com/lukehoban/es6features#let--const), since the variables never get assigned more than once.
 
 Also note that if you run Webpack now, and you are using a modern browser, this code has a good chance of working.  But, it
-won't work for all browser, including ones we want to support.  Let's continue.
+won't work for all browsers, including ones we want to support.  Let's continue.
 
 First, we'll install babel.  Which, sadly, cannot be accomplished via `yarn add babel`.  Instead we must:
 
@@ -44,7 +48,7 @@ We'll also need the Babel loader for Webpack:
 
 !SH yarn add babel-loader
 
-Babel should process all JavaScript, so we'll configure the loader in `webpack/common.js` to handle all `.js` files, save those
+Babel should process all JavaScript, so we'll configure the loader in `webpack/common.js` to handle all `.js` files, save for those
 in `node_modules`, which are already assumed to be ready for distribution to a browser:
 
 !EDIT_FILE webpack/common.js /* */
@@ -152,12 +156,13 @@ Note that the addition of `'babel'` to the preprocessors must come *at the end* 
 If your test file still has the error from before, or if you introduce one, you'll get a lovely new surprise - source maps no
 longer work.
 
+<aside class="pullquote">Source maps no longer work</aside>
+
 While they do work in our production code, we no longer get the ability to see where in our test something failed.  Them's the
 breaks and it's currently not fixable in this setup.  Changing the order of the preprocessors doesn't work, nor does explicitly
 setting options for babel.  Even debugging this is difficult, because of how poorly all these tools are designed and how opaque
 their interoperability is.
 
-<aside class="pullquote">Source maps no longer work</aside>
 
 Such a letdown.  And it seems like a pretty fitting end to our journey.
 

@@ -1,6 +1,12 @@
 require "pathname"
 require_relative "src/lib/bookdown/builder"
 
+desc "Clean out wip"
+task :clean do
+  FileUtils.rm_rf "work"
+  FileUtils.rm_rf "parsed_markdown"
+end
+
 desc "Build it all"
 task :default do
   book = Bookdown::Book.new(

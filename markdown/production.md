@@ -1,4 +1,4 @@
-We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a language that doesn't suport literally any of that in any way.  Thank  God for Webpack!
+We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a language that doesn't suport literally any of that in any way.  Thank Zod for Webpack!
 
 But, we need to go to production.  Code that's not live and solving user problems might as well not exist.
 
@@ -12,7 +12,7 @@ we want to:
 
 Why?
 
-## Minification is Good
+## Minification Saves Time and Money
 
 Our Markdown app is small now, but it could become the world's foremost way of rendering markdown in a browser.  We've got VC's knocking at our door, and we need to be web scale.
 
@@ -69,7 +69,7 @@ things only for production if we want.  And we will want.
 
 Now, we need to create a hashed bundle to deal with a CDN.  Webpack calls this _caching_.
 
-## Creating a bundle that can be long-term cached on a CDN
+## Creating a Bundle for Long-Term CDN Caching
 
 Creating a hashed filename is called [caching](https://webpack.js.org/guides/caching/), since the filename
 allows us to put the bundle in a long-term cache.  Instead of having some sort of plugin to do this, it
@@ -92,7 +92,7 @@ And, it works!
 !SH yarn webpack
 !SH ls dist
 
-This creates two new problems, however.  First, since the filename will now change whenever our code changes, we can't put a static reference to it into our `index.html` file.  The second problem, though, is that we don't want to do this step in development (note that we got a hashed filename without using the `-p` options).  Webpack's documentation warns us:
+This creates two new problems, however.  First, since the filename will now change whenever our code changes, we can't put a static reference to it into our `index.html` file.  The second problem, though, is that we don't want to do this step in development (note that we got a hashed filename without using the `-p` option).  Webpack's documentation warns us:
 
 > Don’t use `[chunkhash]` in development since this will increase compilation time.
 
@@ -194,6 +194,16 @@ Where does that `env` come from?  It comes from us.  We'll need to pass `--env=d
 to webpack to tell it which env we're building for.  This is why we've defaulted it to `dev` so we don't have to type that nonsense every time.  The whole "environment for building" vs "runtime environment" is
 confusing and arbitrary, but this is how it is.
 
+<aside class="sidebar">
+<h1>What is up with those backticks in <code>require</code>?</h1>
+<p>
+You may have noticed that the argument to <code>require</code> above is using backticks and not quotes.  You've also noticed that
+the backticks contain the expression <code>${env}</code>.  This is a way of doing string interpolation that, while not supported
+universally in all browsers and not part of ES5, it <em>is</em> available to us in our Webpack configurations.  The formal name
+for this is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">template literals</a>.
+</p>
+</aside>
+
 Next, we'll create `webpack/dev.js`.
 
 This file will bring in a common Webpack config, and modify it for development.  This will look very similar
@@ -286,7 +296,7 @@ First, install it:
 
 !SH yarn add html-webpack-plugin
 
-By default, this plugin will produce an `index.html` file that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify that.  `HtmlWebpackPlugin` allows us to specify a template to use and, if it's just straight-up normal HTML, the plugin will insert the `<script>` tag in the right place.
+By default, this plugin will produce an `index.html` file from scratch that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify a template.  `HtmlWebpackPlugin` allows us to specify one to use and, if it's just straight-up normal HTML, the plugin will insert the `<script>` tag in the right place.
 
 Let's place that file in a new directory called `html`.  Note that we've omitted the `<script>` tag we had before.
 
@@ -294,6 +304,7 @@ Let's place that file in a new directory called `html`.  Note that we've omitted
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- script tag is omitted - Webpack will provide -->
   </head>
   <body>
     <h1>Markdown Preview-o-tron 7000!</h1>
@@ -339,7 +350,7 @@ Now, run Webpack
 
 !SH yarn webpack
 
-If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag:
+If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag (at the bottom, and messing up our indentation):
 
 !SH cat dev/index.html
 
@@ -372,7 +383,7 @@ keystrokes:
   "scripts": {
     "webpack": "$(yarn bin)/webpack $npm_package_config_webpack_args",
     "prod": "$(yarn bin)/webpack  $npm_package_config_webpack_args -p --env=production",
-    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run"
+    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run --no-color"
   }
 }
 !END PACKAGE_JSON

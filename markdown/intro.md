@@ -4,9 +4,7 @@ find out.
 I find the configuration of Webpack hard to understand and derive.  I find the general concept of Webpack very
 difficult to grasp, especially when reading the myriad blogs documenting the way to set it up—they are all different!
 
-The source of this is that Webpack is a monolithic system that does many unrelated things in an opaque way, while also being
-designed around extreme flexibility.  Unlike a monolithic system such as Ruby on Rails, nothing in  Webpack “just works”—you
-have to configure even basic things.
+The source of these problems is that Webpack is a monolithic system that does many unrelated things in an opaque way, while also being designed around extreme flexibility.  Unlike a monolithic framework such as Ruby on Rails, nothing in  Webpack “just works”—you have to provide configuration for Webpack's most basic features to work.
 
 This is part of JavaScript's culture—each new problem in your development environment is viewed as a chance to invent a
 solution from first principles and no particular opinion on this is viewed as canonical or idiomatic.  This means we'll be
@@ -18,7 +16,7 @@ throw at this problem, Medium blog posts be damned!
 
 ## What Problem Does Webpack Solve?
 
-Webpack exists to give us a feature of JavaScript that exists in every other language by default - modularization.
+Webpack exists to give us a feature of JavaScript that exists in most other languages by default - modularization.
 
 As programmers, we want to put code in different files for the purposes of organization.  Said another way, we
 don't want all our JavaScript in one file.  We may also wish to use third-party JavaScript libraries to help us.
@@ -95,7 +93,7 @@ address.some_other_function();
 
 Webpack allows you to specify that `main.js` is your main file, and that `main.js` might contain instructions for locating other files, which Webpack should do, recursively until all needed files have been located. All those files should then be brought together and translated into a single file, suitable for use in a web browser.
 
-Surprisingly, `webpack -o bundle.js *.js` does not do this.  Because the JavaScript ecosystem favors monolithic, do-everything tools, Webpack, in fact, does everything (except what it doesn't—we'll get to that).  It's super flexible, which means it's hard to use, hard to understand, and hard to learn.
+Surprisingly, `webpack *.js > bundle.js` does not do this.  Because the JavaScript ecosystem favors monolithic, do-everything tools, Webpack, in fact, does everything (except what it doesn't—we'll get to that).  It's super flexible, which means it's hard to use, hard to understand, and hard to learn.
 
 I'm going to try to correct that by starting from a very simple case, and building things up, one step at a time, until we have a reasonable development and production environment, while only adding configuration when **there is a problem that needs solving**.
 
@@ -107,7 +105,7 @@ To install Webpack, you'll need Node, so [go install it][install-node] (you migh
 [node-from-package]: https://nodejs.org/en/download/package-manager/
 [install-yarn]: https://yarnpkg.com/en/docs/install
 
-Many tutorials and READMEs have you just install JavaScript packages willy-nilly.  We aren't going to do that.  We're going to
+Many tutorials and READMEs tell you to install JavaScript packages willy-nilly.  We aren't going to do that.  We're going to
 have a file to keep track of all the stuff our project needs.  That file is `package.json` and Yarn can create one for us.  This
 allows us to recreate our system whenever we want without having to re-execute a bunch of commands.
 
@@ -140,7 +138,7 @@ that Webpack is creating and will be used in our browser.
 
 Let's make a directory for our code called `js`:
 
-!SH mkdir js
+!SH mkdir -p js
 
 Now, we'll make our entry point in `js/index.js` like so:
 

@@ -2,7 +2,7 @@ We're getting a better and better setup for developing and deploying our applica
 
 Stack traces tell us where in our code errors are happening.  In most programming languages, when an uncaught error happens, we see some information about what line of code raised the error, as well as the path through the code that led to that error.  Even in a language like C, we can do this.  Not so in JavaScript.
 
-The reason is that the file we're editing is not the file that's being served.  Webpack is compiling all of our files together, as well as minifying them and including our third party libraries.
+The reason is that the file we're editing is not the file that's being executed.  Webpack is compiling all of our files together, as well as minifying them and including our third party libraries.
 
 Let's see the problem in action.
 
@@ -12,7 +12,7 @@ Re-run Webpack and open up `dev/index.html`, then open the JavaScript console, a
 
 ![Image of a useless stack trace](images/nosourcemaps.png)
 
-The error came from line 1 of our bundle.  This is technically true, since our bundle is minified and all the code is on one line.  Since we aren't editing this file directly, we have no idea where this error came from.
+The error came from line 1 of our bundle.  This is technically true, since our bundle is minified and all the code is on one line.  Since we aren't editing this file directly, we have no idea where this error came from in our original source code.
 
 The solution to this is a feature that most browsers support called _sourcemaps_.
 
@@ -195,7 +195,7 @@ If you navigate to that url and port in your web browser, Karma will run your te
 22 04 2017 14:37:02.819:INFO [Chrome 57.0.2987 (Mac OS X 10.12.4)]: Connected on socket 7nP6V7W0YsH5C0f4AAAB with id manual-9961
 PhantomJS 2.1.1 (Mac OS X 0.0.0) markdownPreviewer attachPreviewer renders markdown to the preview element FAILED
 	Expected '<p>This is <em>some markdown</em></p>' to be '<p>This is <i>some markdown</em></p>'.
-	webpack:///spec/markdownPreview.spec.js:44:0 <- markdownPreview.spec.js:1:77552
+	webpack:///spec/markdownPreview.spec.js:40:0 <- markdownPreview.spec.js:1:77552
 	loaded@http://localhost:9876/context.js:162:17
 Chrome 57.0.2987 (Mac OS X 10.12.4) markdownPreviewer attachPreviewer renders markdown to the preview element FAILED
 	Expected '<p>This is <em>some markdown</em></p>' to be '<p>This is <i>some markdown</em></p>'.

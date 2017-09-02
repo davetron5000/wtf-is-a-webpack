@@ -2,7 +2,7 @@ CSS is great for writing term papers, not great for writing web apps, but it's w
 
 For our simple app, we *could* inline our CSS into the `<head>`, but the second we need another template, that ceases to work, and we'd like to manage CSS in separate files, the same as our JavaScript.
 
-Webpack can totally handle this, even though it feels way outside its wheelhouse, since it's not JavaScript.  I'm not even sure *why* Webpack has features to support this, but it does, and it prevents us finding another tool to manage CSS.
+Webpack can totally handle this, even though it feels way outside its wheelhouse, since it's not JavaScript.  I'm not even sure *why* Webpack has features to support this, but it does, and it keeps us from having to find another tool to manage CSS.
 
 We talked before about _plugins_, but we didn't talk about _loaders_.  Loaders are the fourth core concept in Webpack and they have to do with the way in which `import` behaves on files that aren't JavaScript.
 
@@ -117,7 +117,7 @@ We need to tell Webpack that our CSS that gets loaded should be placed into a se
 
 !SH yarn add extract-text-webpack-plugin  -D
 
-`ExtractTextPlugin` provides the function `extract` which will create a custom loader that, when we use `ExtractTextPlugin` as a _plugin_, will write out our CSS file.  We can even use the magic `"[chunkhash]"` inside the filename to get the hash in there!
+`ExtractTextPlugin` provides the function `extract` which will create a custom loader that, when we also use `ExtractTextPlugin` as a _plugin_, will write out our CSS to a file.  We can even use the magic `"[chunkhash]"` inside the filename to get the hash in there!
 
 Here's what our common Webpack configuration now looks like:
 
