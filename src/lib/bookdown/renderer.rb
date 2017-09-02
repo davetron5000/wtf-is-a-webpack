@@ -16,7 +16,8 @@ module Bookdown
     end
 
     # Args are used by scope of ERB rendering
-    def render(chapter:,
+    def render(book:,
+               chapter:,
                template:,
                toc:,
                parsed_markdown_file:,

@@ -4,7 +4,7 @@ require "fileutils"
 require "bookdown/builder"
 require "bookdown/book"
 
-RSpec.describe Bookdown::Builder do
+RSpec.describe Bookdown::Builder, :integration do
   describe "#build" do
     let(:src_dir)             { Pathname(__FILE__).dirname / "test_book" }
     let(:static_images_dir)   { src_dir / "images" }
@@ -21,7 +21,10 @@ RSpec.describe Bookdown::Builder do
         markdown_dir: markdown_dir,
         work_dir: work_dir,
         parsed_markdown_dir: parsed_markdown_dir,
-        site_dir: site_dir
+        site_dir: site_dir,
+        title: "Foo",
+        subtitle: "The Foo Story",
+        author: "davetron5000"
       )
     }
 

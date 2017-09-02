@@ -13,6 +13,7 @@ RSpec.configure do |config|
   end
 
   config.shared_context_metadata_behavior = :apply_to_host_groups
+  config.profile_examples = 5 if ENV["RSPEC_PROFILE"]
 
   config.disable_monkey_patching!
   config.order = :random

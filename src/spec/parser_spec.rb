@@ -7,7 +7,7 @@ require "stringio"
 
 require "bookdown/parser"
 
-RSpec.describe Bookdown::Parser do
+RSpec.describe Bookdown::Parser, :integration do
   let(:logger)  { instance_double(Logger) }
   let(:tmp_dir) { Pathname(Dir.mktmpdir) }
   let(:work_dir) { tmp_dir / "work" }

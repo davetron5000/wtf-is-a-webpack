@@ -10,7 +10,10 @@ RSpec.describe Bookdown::Book do
       markdown_dir: "/bar",
       work_dir: "/bax",
       parsed_markdown_dir: "markdown",
-      site_dir: "/quux"
+      site_dir: "/quux",
+      author: "davetron500",
+      title: "Test Book",
+      subtitle: "The truth about testing"
     )
   }
   describe "#scss_dir" do

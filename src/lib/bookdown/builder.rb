@@ -113,7 +113,8 @@ module Bookdown
         @logger.info "Chapter #{chapter.title} rendering #{chapter.parsed_markdown_file}"
 
         renderer = Bookdown::Renderer.new
-        renderer.render(chapter: chapter,
+        renderer.render(book: book,
+                        chapter: chapter,
                         toc: toc,
                         template: template,
                         parsed_markdown_file: chapter.parsed_markdown_file,

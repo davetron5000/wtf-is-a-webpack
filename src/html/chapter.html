@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title><%= book.title %> - <%= chapter.title %></title>
     <link href='styles.css' rel='stylesheet' type='text/css' media='all'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <meta charset="utf-8">
@@ -10,10 +11,10 @@
   </head>
   <body>
     <header>
-      <h1>Webpack from Nothing</h1>
+      <h1><%= book.title %></h1>
       <% if show_full_header %>
-      <h2>Minimizing Pain while Learning Why Things Work</h2>
-      <h3>by David Bryant Copeland AKA @davetron5000</h3>
+      <h2><%= book.subtitle %></h2>
+      <h3>by <%= book.author %></h3>
       <% end %>
       <aside class="toc">
         <div class="toc">
