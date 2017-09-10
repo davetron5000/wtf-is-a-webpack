@@ -5,6 +5,13 @@ desc "Clean out wip"
 task :clean do
   FileUtils.rm_rf "work"
   FileUtils.rm_rf "parsed_markdown"
+  wd = Pathname(FileUtils.pwd)
+  while wd.to_s != "/"
+    if File.exist?(wd / "package.json")
+      fail "There is a package.json in #{wd} which will make Yarn totally not work because reasons"
+    end
+    wd = (wd / "..").expand_path
+  end
 end
 
 desc "Build it all"

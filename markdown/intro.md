@@ -280,10 +280,12 @@ We'll add a `"scripts"` key to `package.json`:
 !PACKAGE_JSON
 {
   "scripts": {
-    "webpack": "$(yarn bin)/webpack --config webpack.config.js --display-error-details"
+    "webpack": "webpack --config webpack.config.js --display-error-details"
   }
 }
 !END PACKAGE_JSON
+
+Yes, you can omit `$(yarn bin)` inside `package.json` like this—it knows to find `webpack` in the right place.
 
 Your entire `package.json` looks like so:
 
@@ -313,7 +315,7 @@ There's a lot we aren't doing, that we need to do on any real project, such as:
 
 These are all possible with Webpack and also happen to be intended use-cases, however it's extremely hard to figure out how to do these things without someone just showing you the magical configuration needed to make them happen.  
 
-!AD "Webpack with Rails" "Rails makes all this easy" https://pragprog.com/book/dcbang2/rails-angular-postgres-and-bootstrap-second-edition "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
+!AD "Webpack with Rails" "Rails makes all this easy" http://bit.ly/dcbang2 "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
 
 I don't like that.  Boilerplate is just as tedious as “magic” and is just as intention-unrevealing.  So, we're going to start
 with a problem to solve, and figure out together how to solve that with Webpack.  There wil be digressions, yak shaving, and a

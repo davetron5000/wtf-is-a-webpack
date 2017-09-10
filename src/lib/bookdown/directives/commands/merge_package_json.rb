@@ -11,5 +11,7 @@ class Bookdown::Directives::Commands::MergePackageJSON < Bookdown::Directives::C
     File.open("package.json","w") do |file|
       file.puts(new_package_json)
     end
+  rescue => ex
+    raise "Problem parsing #{Pathname('package.json').expand_path}: #{ex.message}"
   end
 end

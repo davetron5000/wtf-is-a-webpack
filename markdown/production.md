@@ -381,9 +381,9 @@ keystrokes:
 !PACKAGE_JSON
 {
   "scripts": {
-    "webpack": "$(yarn bin)/webpack $npm_package_config_webpack_args",
-    "prod": "$(yarn bin)/webpack  $npm_package_config_webpack_args -p --env=production",
-    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run --no-color"
+    "webpack": "webpack $npm_package_config_webpack_args",
+    "prod": "webpack  $npm_package_config_webpack_args -p --env=production",
+    "karma": "karma start spec/karma.conf.js --single-run --no-color"
   }
 }
 !END PACKAGE_JSON

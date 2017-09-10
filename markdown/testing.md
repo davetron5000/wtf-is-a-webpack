@@ -291,7 +291,7 @@ In the JavaScript ecosystem: pretty much all of them.
 Because each project is a chance to artisnally hand-craft a small batch tool chain, and because the language we're using can't
 even agree on something basic like how to modularize code, we end up with lots of tools that cannot interoperate together at all.
 
-!AD "Simplify" "Do this in a full stack Rails app" https://pragprog.com/book/dcbang2/rails-angular-postgres-and-bootstrap-second-edition "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
+!AD "Simplify" "Do this in a full stack Rails app" http://bit.ly/dcbang2 "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
 
 In this case, our desire to use `import` conflicts with Jasmine's inability to handle it.
 
@@ -422,8 +422,8 @@ Before we move on, let's wrap this up into a script inside `package.json`, becau
 !PACKAGE_JSON
 {
   "scripts": {
-    "webpack": "$(yarn bin)/webpack --config webpack.config.js --display-error-details",
-    "karma": "$(yarn bin)/karma start spec/karma.conf.js --single-run --no-color"
+    "webpack": "webpack --config webpack.config.js --display-error-details",
+    "karma": "karma start spec/karma.conf.js --single-run --no-color"
   }
 }
 !END PACKAGE_JSON
