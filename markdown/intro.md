@@ -68,7 +68,7 @@ moving target).
 <p>
 Because the JavaScript ecosystem can't even agree on the name of the language or how its versions are to be referred to,
 throughout this book, I'll be using the word “JavaScript” to mean “the version of javaScript that runs in all
-reasonable browsers”.  I realize this definition if vague and changes over time.
+reasonable browsers”.  I realize this definition is vague and changes over time.
 </p>
 <p>
 The main point is that there will <em>always</em> be a newer version of JavaScript than what works in a browser, so as a

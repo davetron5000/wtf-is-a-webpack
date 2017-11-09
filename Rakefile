@@ -1,5 +1,5 @@
 require "pathname"
-require_relative "src/lib/bookdown/builder"
+require "bookdown/builder"
 
 desc "Clean out wip"
 task :clean do
@@ -17,7 +17,7 @@ end
 desc "Build it all"
 task :default do
   book = Bookdown::Book.new(
-                src_dir: "src",
+                src_dir: ".",
       static_images_dir: "images",
            markdown_dir: "markdown",
                work_dir: "work",
