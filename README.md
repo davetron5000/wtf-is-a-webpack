@@ -7,3 +7,5 @@ To build:
 ```
 > bundle exec rake
 ```
+
+All content is copyright(c) 2017 by David Bryant Copeland
