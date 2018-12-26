@@ -67,7 +67,7 @@ moving target).
 <h1>But, but JavaScript <em>does</em> support that feature!</h1>
 <p>
 Because the JavaScript ecosystem can't even agree on the name of the language or how its versions are to be referred to,
-throughout this book, I'll be using the word “JavaScript” to mean “the version of javaScript that runs in all
+throughout this book, I'll be using the word “JavaScript” to mean “the version of JavaScript that runs in all
 reasonable browsers”.  I realize this definition is vague and changes over time.
 </p>
 <p>
@@ -105,15 +105,19 @@ To install Webpack, you'll need Node, so [go install it][install-node] (you migh
 [node-from-package]: https://nodejs.org/en/download/package-manager/
 [install-yarn]: https://yarnpkg.com/en/docs/install
 
+!SH node --version
+
+!SH yarn --version
+
 Many tutorials and READMEs tell you to install JavaScript packages willy-nilly.  We aren't going to do that.  We're going to
 have a file to keep track of all the stuff our project needs.  That file is `package.json` and Yarn can create one for us.  This
 allows us to recreate our system whenever we want without having to re-execute a bunch of commands.
 
 !SH yarn -y init
 
-This will create an empty `package.json` for us.  Now, let's install Webpack!
+This will create an empty `package.json` for us.  Now, let's install Webpack!  Note that the CLI is a separate module.
 
-!SH{quiet} yarn add webpack
+!SH{quiet} yarn add webpack@5.0.0-alpha.1 webpack-cli
 
 Holy moly is that a lot of stuff!  I find it anxiety-inducing to watch the sheer volume of code being downloaded, and often
 wonder what problem *that* solves, but nevertheless, it should work.  There will be ASCII art.  There will be warnings that you
@@ -204,7 +208,7 @@ What we want is to produce a singe file called `bundle.js` that uses all this co
 
 We can do this without configuration per se, and just use CLI options:
 
-!SH $(yarn bin)/webpack  --entry ./js/index.js  --output-filename=bundle.js
+!SH $(yarn bin)/webpack  --mode=development --entry ./js/index.js  --output-filename=bundle.js
 
 Now, let's load this in a browser.  Create `index.html` like so:
 
@@ -249,7 +253,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
-  }
+  },
+  mode: "none"
 };
 !END CREATE_FILE
 
@@ -305,6 +310,8 @@ And just think how much we can accomplish with just eight lines of configuration
 
 So, what's next?
 
+!AD "Webpack with Rails" "Rails makes all this easy" http://bit.ly/dcbang2 "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
+
 There's a lot we aren't doing, that we need to do on any real project, such as:
 
 * Bringing in third-party libraries
@@ -315,7 +322,6 @@ There's a lot we aren't doing, that we need to do on any real project, such as:
 
 These are all possible with Webpack and also happen to be intended use-cases, however it's extremely hard to figure out how to do these things without someone just showing you the magical configuration needed to make them happen.  
 
-!AD "Webpack with Rails" "Rails makes all this easy" http://bit.ly/dcbang2 "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
 
 I don't like that.  Boilerplate is just as tedious as “magic” and is just as intention-unrevealing.  So, we're going to start
 with a problem to solve, and figure out together how to solve that with Webpack.  There wil be digressions, yak shaving, and a

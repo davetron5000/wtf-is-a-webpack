@@ -26,9 +26,13 @@ could think of is a markdown previewer.  There's a [markdown module][markdown] w
 
 First, we'll add it to our `package.json` file using `yarn add`:
 
-!SH yarn add markdown
+!SH yarn add markdown util
 
-This will also run `yarn install` which will download the markdown package to `node_modules`.
+This will also run `yarn install` which will download the markdown package to `node_modules`. Note that we had to include the
+`util` module, as Webpack 5 no longer includes Node polyfills. I don't really know what that means, and in most other languages
+if a module needs another module, it gets installed via the package management system.  In this case, some combination of Node,
+JavaScript, and Webpack have decided that is not either possible or desired, so we have to manually manage some—but not
+all—transitive dependencies.
 
 Let's create our HTML first by replacing `dist/index.html` with the following:
 
@@ -125,7 +129,7 @@ export default {
 }
 !END CREATE_FILE
 
-Now, what's up with `export default`? Writing `import attachPreviewer from "./markdownPreviewer";` is asking Webpack (or whoever) to import the default exported thing.  Using `export default` sets that thing, which is handy when you are just exporting one function (though, let's be honest, it's not handy, because it's another special form to have to understand and remember to do, all to save a few scant keystrokes and obscure intent).
+What's up with `export default`? Writing `import attachPreviewer from "./markdownPreviewer";` is asking Webpack (or whoever) to import the default exported thing.  Using `export default` sets that thing, which is handy when you are just exporting one function (though, let's be honest, it's not handy, because it's another special form to have to understand and remember to do, all to save a few scant keystrokes and obscure intent).
 
 <aside class="sidebar">
 <h1>Why do some imports have <code>./</code> and some don't?</h1>

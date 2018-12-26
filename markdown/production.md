@@ -1,4 +1,4 @@
-We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a language that doesn't suport literally any of that in any way.  Thank Zod for Webpack!
+We can write JavaScript code in modules and bring in third party libraries, and we can write unit tests.  That's pretty darn good for a language that doesn't support literally any of that in any way.  Thank Zod for Webpack!
 
 But, we need to go to production.  Code that's not live and solving user problems might as well not exist.
 
@@ -41,100 +41,110 @@ If we deployed our code to a content delivery network (which we are likely going
 
 So, we want to generate a file like `924giuwergoihq3rofdfg-bundle.js`, where `924giuwergoihq3rofdfg` changes each time our code changes.
 
-This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to be able to do this for us.  Turns out, it can.
+This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to be able to do this for us.  Turns out, it can, and we can save some configuration by using the production _mode_.
 
-## Something Automatic!
+## Webpack Modes
 
-Accoring to [Webpack's documentation](https://webpack.js.org/guides/production/), merely using the `-p`
-option when invoking it will perform minification!  Wow!  Let's see if that's true.
+In our existing Webpack configuration, we saw the `mode` key, and it's set to `"none"`.  Per [Webpack's mode documentation](https://webpack.js.org/concepts/mode/), this disables all optimizations.
 
-First, let's see how big the bundle is:
+Looking at the documentation for what Webpack does when you set the mode to either `"development"` or `"production"`, it says
+that it configures different plugins.  Webpack's internals are built on plugins, and presumably there is some internal pipeline
+where these plugins are applied to the code from the entry points and produce the output bundle.
+
+Most of the plugins are either entirely undocumented or documented for Webpack *developers*, as opposed to what we are: Webpack
+users.
+
+While the thought of a production mode that configures all the stuff we need automatically is nice, Webpack hasn't built much
+trust here, and I'm pretty uneasy using a bunch of undocumented plugins, even if they *are* recommended by the Webpack
+developers.  Stuff like [NoEmitOnErrorsPlugin](https://webpack.js.org/configuration/optimization/#optimization-noemitonerrors) seem dangerous—why would you want your build tool to swallow errors an exit zero if something went wrong?
+
+Let's not opt into any of this and add configuration explicitly so we know what's going on.  We'll leave the `mode` key as
+`"none"` for now.
+
+We're back where we started, still needing minification and bundle hashing.  Let's start with minification.
+
+## Minifying with the `TerserWebpackPlugin`
+
+One of the plugins included by default in production mode is the
+[`TerserWebpackPlugin`](https://webpack.js.org/plugins/terser-webpack-plugin/), which is documented as so:
+
+> This plugin uses terser to minify your JavaScript.
+
+[Terser](https://github.com/terser-js/terser) is a JavaScript minifier, so this sounds like what we want.
+
+Before we set it up, let's check the size of our bundle before we minify it:
 
 !SH yarn webpack
+
 !SH wc -c dist/bundle.js
 
-Now, let's try `-p`.  To make sure Yarn doesn't think we're passing **it** `-p`, we use the UNIX special
-switch that means “stop parsing command-line switches”, which is `--`:
+We'll compare this value to the bundle size after we set up minification.
 
-!SH yarn webpack -- -p
+While we could install the plugin and configure it directly, Webpack allows us to use it without being so explicit.  In this
+case, we can set the `minimize` key to `true` in the `optimization` key.
+
+We haven't seen the `optimization` key before, and if you look at the documentation for production mode, it shows a lot of
+options being set in there.
+
+For our needs, setting [`optimization` to true](https://webpack.js.org/configuration/optimization/#optimization-minimize) will
+configure the `TerserWebpackPlugin` for us, so let's try it.
+
+Your `webpack.config.js` should look like so:
+
+!EDIT_FILE webpack.config.js /* */
+{
+  "match": "  mode: \"none\"",
+  "insert_before": [
+    "  optimization: {",
+    "    minimize: true",
+    "  },"
+  ]
+}
+!END EDIT_FILE
+
+Now, when we run Webpack, we should see our bundle side get much smaller.
+
+!SH yarn webpack
+
 !SH wc -c dist/bundle.js
 
-Not bad!  One third the final size.  And without any configuration!
-
-So, what did `-p` *actually* do?
-
-It configures the `UglifyJsPlugin`, which uses [UglifyJS](http://lisperator.net/uglifyjs/) to minify our
-code.  It also sets the `NODE_ENV` environment variable to "production", which allows us to configure
-things only for production if we want.  And we will want.
-
-Now, we need to create a hashed bundle to deal with a CDN.  Webpack calls this _caching_.
+Voila!  On my machine, this reduced the file size by about two-thirds.  Not too bad.
 
 ## Creating a Bundle for Long-Term CDN Caching
 
 Creating a hashed filename is called [caching](https://webpack.js.org/guides/caching/), since the filename
 allows us to put the bundle in a long-term cache.  Instead of having some sort of plugin to do this, it
-turns out the the value of the string we give to the `filename` key of `output` isn't just an ordinary
+turns out the value of the string we give to the `filename` key of `output` isn't just an ordinary
 string!  It's a second configuration format (yay) that allows us to put a hashed value into the filename.
 
-We can set the value to `"[chunkhash]-bundle.js"`, like so:
+We can set the value to `"bundle-[contenthash].js"`, like so:
 
 !EDIT_FILE webpack.config.js /* */
 {
   "match": "    filename:",
   "replace_with": [
-    "    filename: '[chunkhash]-bundle.js'"
+    "    filename: 'bundle-[contenthash].js'"
   ]
 }
 !END EDIT_FILE
 
-And, it works!
+Let's remove the existing bundle:
+
+!SH rm dist/bundle.js
+
+Now, let's re-run webpack and see what happens:
 
 !SH yarn webpack
+
 !SH ls dist
 
-This creates two new problems, however.  First, since the filename will now change whenever our code changes, we can't put a static reference to it into our `index.html` file.  The second problem, though, is that we don't want to do this step in development (note that we got a hashed filename without using the `-p` option).  Webpack's documentation warns us:
+Nice!  We can minify and hash the filename for long term caching, but this creates a few new problems.  First, since the filename
+of our bundle changes every time its contents change, we can't reference it in a static HTML file.  The second problem is that we
+likely don't want to doing either minification or hashing when doing local development.
 
-> Don’t use `[chunkhash]` in development since this will increase compilation time.
+Let's tackle the second problem first and split up our configuration.
 
-If you recall above, we mentioned that the `-p` option sets the value of `NODE_ENV` to "production".  You
-should have every reason to believe that you can access that value inside your Webpack configuration to
-create conditional, production-only configuration like so:
-
-```javascript
-output: {
-  path: path.resolve(__dirname, "dist"),
-  filename: process.env.NODE_ENV === "production" ? "[chunkhash]-bundle.js" : "bundle.js"
-}
-```
-
-Sadly, you would be wrong.
-
-The `-p` flag doesn't actually set an environment variable.  What it really does is to instruct Webpack to
-replace code that looks like `process.env.NODE_ENV` _in the code Webpack is bundling_ with the value `"production"`, but **not in `webpack.config.js`**.  Sigh.
-
-If you want to read a long an annoying tale of why this is, please check out [this Webpack issue](https://github.com/webpack/webpack/issues/2537).  Spoiler: there is no solution at the end.
-
-Although it's nice that `-p` exists to do *something* for us for a production build, it's clearly
-insufficient.  We've only come to our _second_ production requirement and it won't work.
-
-If you read the docs more, it's clear where this is going - we need one configuration for dev and one for
-production.  This is not uncommon amongst web application development tools, however it would nice if
-Wepack just supported this directly, since `-p` is essentially unusable for any real project (if it doesn't work for a 10-line markdown processor, it doesn't work).
-
-<aside class="pullquote">
-We need one configuration for dev and one for production
-</aside>
-
-The good news is, after we set this up, configuring stuff for dev vs. prod will be much simpler.
-
-The trick is to figure out how to avoid duplicating common configuration.  Webpack sort-of supports this
-via the [webpack-merge](https://github.com/survivejs/webpack-merge) module, which can smartly merge two
-Webpack configurations.
-
-So, we'll need to create a common base configuration, and then one for dev-only and another for prod-only,
-merging the proper one at compile time.
-
-### Separating Production and Development Configuration
+## Separating Production and Development Configuration
 
 The way this works is that our main `webpack.config.js` will simply `require` an environment-specific
 webpack configuration.  Those environment-specific ones will pull in a common Webpack configuration, then
@@ -144,9 +154,9 @@ using the `webpack-merge` module, overwrite or augment anything needed specific 
 digraph webpack_configs {
   rankdir="TD"
 
-  Shared[label="webpack/common.js" fontname="Courier" shape="tab"]
-  Dev[label="webpack/dev.js" fontname="Courier" shape="tab"]
-  Prod[label="webpack/production.js" fontname="Courier" shape="tab"]
+  Shared[label="config/webpack.common.config.js" fontname="Courier" shape="tab"]
+  Dev[label="config/webpack.dev.config.js" fontname="Courier" shape="tab"]
+  Prod[label="config/webpack.production.config.js" fontname="Courier" shape="tab"]
   Main[label="webpack.config.js" fontname="Courier" shape="folder" style="bold"]
   Decision[label="environment?" shape="diamond"]
 
@@ -162,10 +172,10 @@ digraph webpack_configs {
 
 Our general requirements at this point are:
 
-* No minifcation or hashing in development
+* No minification or hashing in development
 * Minify **and** hash in production
 * Output development files in a different location than production files (so we don't get confused about what's what).
-* Avoid duplicatng coniguration if at-all possible.
+* Avoid duplicating configuration if at-all possible.
 
 Since we don't have much configuration now, this shouldn't be a problem.
 
@@ -175,9 +185,9 @@ First, install webpack-merge:
 
 Now, to create our _four_ configuration files.  I'm willing to tolerate one configuration file at the
 top-level, but not four.  So, we'll be putting the dev, production, and common in a new directory, called
-`webpack`:
+`config`:
 
-!SH mkdir -p webpack
+!SH mkdir -p config
 
 Our top-level `webpack.config.js` will reference the environment-specific file in `webpack`:
 
@@ -186,13 +196,12 @@ module.exports = function(env) {
   if (env === undefined) {
     env = "dev"
   }
-  return require(`./webpack/${env}.js`)
+  return require(`./config/webpack.${env}.config.js`)
 }
 !END CREATE_FILE
 
 Where does that `env` come from?  It comes from us.  We'll need to pass `--env=dev` or `--env=production`
-to webpack to tell it which env we're building for.  This is why we've defaulted it to `dev` so we don't have to type that nonsense every time.  The whole "environment for building" vs "runtime environment" is
-confusing and arbitrary, but this is how it is.
+to webpack to tell it which env we're building for.  This is why we've defaulted it to `dev` so we don't have to type that nonsense every time.
 
 <aside class="sidebar">
 <h1>What is up with those backticks in <code>require</code>?</h1>
@@ -204,18 +213,18 @@ for this is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Ref
 </p>
 </aside>
 
-Next, we'll create `webpack/dev.js`.
+Next, we'll create `config/webpack.dev.config.js`.
 
 This file will bring in a common Webpack config, and modify it for development.  This will look very similar
 to our original `webpack.config.js`, but our output path is going to be `dev` instead of `dist`, so we don't get
 confused about what files are what.
 
-Also remember that since this file is in `webpack/` and we want to put files in `dev/` (not `webpack/dev`), we have to use `../dev`.
+Also remember that since this file is in `config/` and we want to put files in `dev/` (not `config/dev`), we have to use `../dev`.
 
-!CREATE_FILE webpack/dev.js
+!CREATE_FILE config/webpack.dev.config.js
 const path         = require('path');
 const Merge        = require('webpack-merge');
-const CommonConfig = require('./common.js');
+const CommonConfig = require('./webpack.common.config.js');
 
 module.exports = Merge(CommonConfig, {
   output: {
@@ -225,26 +234,30 @@ module.exports = Merge(CommonConfig, {
 });
 !END CREATE_FILE
 
-Now, we'll create our production configuration in `webpack/production.js`:
+Now, we'll create our production configuration in `config/webpack.production.config.js`:
 
-!CREATE_FILE webpack/production.js
+!CREATE_FILE config/webpack.production.config.js
 const path         = require('path');
 const Merge        = require('webpack-merge');
-const CommonConfig = require('./common.js');
+const CommonConfig = require('./webpack.common.config.js');
 
 module.exports = Merge(CommonConfig, {
   output: {
     path: path.join(__dirname, '../production'),
-    filename: '[chunkhash]-bundle.js'
+    filename: 'bundle-[contenthash].js'
+  },
+  optimization: {
+    minimize: true
   }
 });
 !END CREATE_FILE
 
-Both files reference `common.js`, we create that next:
+Both files reference `webpack.common.config.js`, we create that next:
 
-!CREATE_FILE webpack/common.js
+!CREATE_FILE config/webpack.common.config.js
 module.exports = {
-  entry: './js/index.js'
+  entry: './js/index.js',
+  mode: 'none'
 };
 !END CREATE_FILE
 
@@ -254,9 +267,8 @@ _relative to the file `require` is called from_.  Further, when we call `path.jo
 in.  **But**, our entry point is _relative to where Webpack is executed from_, which is to say, the root
 directory.
 
-
 Let that sink in.  As an exercise for later, decide for yourself if any of this is an example of a good
-design decision.  Perhaps it's my fault for insisting I tuck away these silly files in `webpack/`, but I
+design decision.  Perhaps it's my fault for insisting I tuck away these silly files in `config/`, but I
 find all of this unnecessarily arbitrary and confusing.
 
 Anyway, we should be able to run webpack as  before:
@@ -269,34 +281,63 @@ This places our bundle in `dev`, so we'll need to move our HTML file there:
 
 And now, our app should work as before.
 
-!SCREENSHOT "Our app still works" dev/index.html still_working.png
+!DO_AND_SCREENSHOT "Our app rendering markdown still works" dev/index.html still_working.png
+var e = document.createEvent('Event'); 
+document.getElementById('source').value = "# This is a test\n\n* of\n* some\n* _markdown_"; 
+e.initEvent('submit',true,true); 
+document.getElementById('editor').dispatchEvent(e);
+!END DO_AND_SCREENSHOT
 
-Next, we can build for production:
+To build for production, we need to pass the `--env=production` flag to Webpack.  We'll want a Node script to do that, and we'll
+also want to consolidate the arguments to Webpack to avoid duplication.  First, we'll add a `config` section, like so:
 
-!SH yarn webpack -- --env=production -p
+!PACKAGE_JSON
+{
+  "config": {
+    "webpack_args": " --config webpack.config.js --display-error-details"
+  }
+}
+!END PACKAGE_JSON
+
+We can now use these to create a new task, `webpack:production`, that mirrors our existing `webpack` task, but also passes in
+`--env=production`:
+
+!PACKAGE_JSON
+{
+  "scripts": {
+    "webpack": "webpack $npm_package_config_webpack_args",
+    "webpack:production": "webpack $npm_package_config_webpack_args --env=production",
+    "webpack:test": "webpack --config test/webpack.test.config.js --display-error-details",
+    "jest": "jest test/bundle.test.js",
+    "test": "yarn webpack:test && yarn jest"
+  }
+}
+!END PACKAGE_JSON
+
+With this in place, we can run `yarn webpack:production` to produce the production bundle:
+
+!SH yarn webpack:production
+
+We can see the production bundle in the `production/` directory:
 
 !SH ls production
 
-Which brings us to our second problem to solve (remember, this was just the _first_ one!), which is how
-do we get our `index.html` to reference the file we just built.
+That solves one of our problems, now for the second problem: how do we reference this file in our HTML file, given that it's name
+will change over time?
 
-### Accessing the Hashed Filename in our HTML
+## Accessing the Hashed Filename in our HTML
 
-So far, our app doesn't need a server to do anything, but we now need something dynamic.  Rather than go
-through *that* pain, let's hold what we've got, and get the generated filename into our HTML.
+In a more sophisticated application, we would have a web server render our HTML and that server could produce dynamic HTML that
+includes our bundle name. Setting that up is a huge digression, so let's try to treat our HTML file as a template that we fill in
+with the bundle name for our production build.
 
-In the previous section, we copied our HTML around, and that's not good.  We're building a build system
-here, and it shouldn't include us typing `cp`!
+The [HtmlWebpackPlugin](https://github.com/jantimon/html-webpack-plugin) was designed to do this!
 
-What we want is to treat our `index.html` as a rudimentary template, and include a reference to our bundle
-in there at build time.  The [HtmlWebpackPlugin](https://github.com/jantimon/html-webpack-plugin) was
-designed to do this!
+First, install it (note we have to use master here since a Webpack 5-compatible version hasn't been released yet):
 
-First, install it:
+!SH yarn add https://github.com/jantimon/html-webpack-plugin
 
-!SH yarn add html-webpack-plugin
-
-By default, this plugin will produce an `index.html` file from scratch that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify a template.  `HtmlWebpackPlugin` allows us to specify one to use and, if it's just straight-up normal HTML, the plugin will insert the `<script>` tag in the right place.
+By default, this plugin will produce an `index.html` file from scratch that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify a template.  `HtmlWebpackPlugin` allows us to specify one to use and, if it's just straight-up, normal HTML, the plugin will insert the `<script>` tag in the right place.
 
 Let's place that file in a new directory called `html`.  Note that we've omitted the `<script>` tag we had before.
 
@@ -321,13 +362,13 @@ Let's place that file in a new directory called `html`.  Note that we've omitted
 !END CREATE_FILE
 
 Now, we'll bring in the new plugin and configure it.  This is common to both production and development, so
-we'll put this in `webpack/common.js`:
+we'll put this in `config/webpack.common.config.js`:
 
-!EDIT_FILE webpack/common.js /* */
+!EDIT_FILE config/webpack.common.config.js /* */
 {
   "match": "module.exports = ",
   "replace_with": [
-    "const HtmlPlugin     = require('html-webpack-plugin');",
+    "const HtmlPlugin = require(\"html-webpack-plugin\");",
     "",
     "module.exports = {",
     "  plugins: [",
@@ -339,7 +380,7 @@ we'll put this in `webpack/common.js`:
 }
 !END EDIT_FILE
 
-Note again the arbitrary  nature of relative paths.  The `template` will be accessed from the directory
+Note again the arbitrary nature of relative paths.  The `template` will be accessed from the directory
 where we run Webpack, so it's just `./html`, and **not** `../html`.
 
 Let's clean out the existing `dev` directory so we can be sure we did what we think we did:
@@ -356,46 +397,17 @@ If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag (
 
 **And**, if you run this for production, it works as we'd like!
 
-!SH yarn webpack -- -p --env=production
+!SH yarn webpack:production
 !SH cat production/index.html
 
-Nice!
+Nice!  And, we can see that the production app works:
 
-As a final step, let's modify `package.json` to handle the production build.
-
-## Scripting the Production Build
-
-Doing this the way we've seen will result in duplicating the command-line arguments common to webpack, so let's set that in [config section](https://docs.npmjs.com/files/package.json#config) of `package.json`.
-
-!PACKAGE_JSON
-{
-  "config": {
-    "webpack_args": " --config webpack.config.js --display-error-details"
-  }
-}
-!END PACKAGE_JSON
-
-Now, we can reference this configuration var by prefixing it with `$npm_package_config_` and save precious
-keystrokes:
-
-!PACKAGE_JSON
-{
-  "scripts": {
-    "webpack": "webpack $npm_package_config_webpack_args",
-    "prod": "webpack  $npm_package_config_webpack_args -p --env=production",
-    "karma": "karma start spec/karma.conf.js --single-run --no-color"
-  }
-}
-!END PACKAGE_JSON
-
-And with that:
-
-!SH yarn prod
-
-(Note that we can't use "production" because it has some special meaning that generates an error that says
-"no command specified" rather than, you know, telling us we can't use the reserved word "production")
-
-The good thing about putting this in `"scripts"` , other than scripting away tedious stuff to have to type, is that we now have one command that means "make production happen".  As our application evolves, we can add more features behind the `prod` command.
+!DO_AND_SCREENSHOT "Production version still works" dev/index.html prod_working.png
+var e = document.createEvent('Event'); 
+document.getElementById('source').value = "# This is a test\n\n* of\n* some\n* _markdown_"; 
+e.initEvent('submit',true,true); 
+document.getElementById('editor').dispatchEvent(e);
+!END DO_AND_SCREENSHOT
 
 This was a bit of a slog, but we now have a decent project structure, and can do useful and basic things
 for development.
