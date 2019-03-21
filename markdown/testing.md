@@ -411,6 +411,28 @@ Now, we'll add it as a preprocessor and use `require` to bring in our existing W
 }
 !END EDIT_FILE
 
+Sigh. It's not any easier than it looks.
+
+!SH{nonzero} $(yarn bin)/karma start spec/karma.conf.js  --single-run --no-color
+
+Now Webpack is unhappy because it's trying to put all of our bundled code into the same `bundle.js` file. We actually asked it to do this when specifying `output` in our `webpack.config.js` file. Silly us!
+
+So let's change that, rather than specifying an output name we'll just tell Webpack to use `"[name].js"`.
+
+!EDIT_FILE webpack.config.js /* */
+const path = require("path");
+
+module.exports = {
+  entry: "./js/index.js",
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name].js"
+  }
+};
+!END EDIT_FILE
+
+!SH $(yarn bin)/karma start spec/karma.conf.js  --single-run --no-color
+
 And wouldn't you know it, it works!
 
 !SH $(yarn bin)/karma start spec/karma.conf.js  --single-run --no-color
