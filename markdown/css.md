@@ -113,11 +113,11 @@ If we open up `dev/index.html` in your browser, the CSS isn't being applied.  BU
 
 There is a loader called the style-loader that would dynamically create a `<style>` tag in our DOM and put the CSS in there, but that's no good.  We want the browser to load CSS separately, so it can download both the CSS *and* the JS in parallel.
 
-We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [ExtractTextPlugin](https://webpack.js.org/plugins/extract-text-webpack-plugin/).  Despite its generic name, it appears created to solve this specific problem.
+We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [MiniCssExtractPlugin](https://github.com/webpack-contrib/mini-css-extract-plugin).  It appears created to solve this specific problem.
 
-!SH yarn add extract-text-webpack-plugin  -D
+!SH yarn add mini-css-extract-plugin  -D
 
-`ExtractTextPlugin` provides the function `extract` which will create a custom loader that, when we also use `ExtractTextPlugin` as a _plugin_, will write out our CSS to a file.  We can even use the magic `"[chunkhash]"` inside the filename to get the hash in there!
+`MiniCssExtractPlugin` provides the function `loader` which will create a custom loader that, when we also use `MiniCssExtractPlugin` as a _plugin_, will write out our CSS to a file.  We can even use the magic `"[chunkhash]"` inside the filename to get the hash in there!
 
 Here's what our common Webpack configuration now looks like:
 
@@ -125,20 +125,23 @@ Here's what our common Webpack configuration now looks like:
 {
   "match": "const HtmlPlugin",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require("mini-css-extract-plugin");"
   ]
 },
 {
   "match": "        use: 'css-loader'",
   "replace_with": [
-    "        use: ExtractTextPlugin.extract({",
-    "          use: 'css-loader'",
-    "        })"
+    "        use: ["
+    "          {"
+    "            loader: MiniCssExtractPlugin.loader"
+    "          },"
+    "          'css-loader'",
+    "        ]"
   ]
 }
 !END EDIT_FILE
 
-We also need to tell `ExtractTextPlugin` what name to use.  Because we want this file hashed, the same as
+We also need to tell `MiniCssExtractPlugin` what name to use.  Because we want this file hashed, the same as
 our JavaScript, we'll need to specify some configuration in `webpack/dev.js` and `webpack/production.js`.
 Here's what `webpack/dev.js` will look like
 
@@ -146,7 +149,7 @@ Here's what `webpack/dev.js` will look like
 {
   "match": "const CommonConfig",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require("mini-css-extract-plugin");"
   ]
 },
 {
@@ -154,7 +157,7 @@ Here's what `webpack/dev.js` will look like
   "replace_with": [
     "  },",
     "  plugins: [",
-    "    new ExtractTextPlugin('styles.css')",
+    "    new MiniCssExtractPlugin({ filename: 'styles.css' })",
     "  ]"
   ]
 }
@@ -166,7 +169,7 @@ And, for `production.js`:
 {
   "match": "const CommonConfig",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require("mini-css-extract-plugin");"
   ]
 },
 {
@@ -174,7 +177,7 @@ And, for `production.js`:
   "replace_with": [
     "  },",
     "  plugins: [",
-    "    new ExtractTextPlugin('[chunkhash]-styles.css')",
+    "    new MiniCssExtractPlugin({ filename: '[chunkhash]-styles.css' })",
     "  ]"
   ]
 }
