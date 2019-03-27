@@ -42,7 +42,7 @@ won't work for all browsers, including ones we want to support.  Let's continue.
 
 First, we'll install babel.  Which, sadly, cannot be accomplished via `yarn add babel`.  Instead we must:
 
-!SH yarn add babel-core
+!SH yarn add @babel/core
 
 We'll also need the Babel loader for Webpack:
 
@@ -68,13 +68,13 @@ Of course, Babel doesn't automatically do anything, so we need more configuratio
 presets, but of course, none of them are actually pre-set.  We'll use the recommend “env” preset, which means “generally do the
 right thing without having to configure stuff”, which is a godsend, so we'll take it.
 
-!SH yarn add babel-preset-env
+!SH yarn add @babel/preset-env
 
 Now, create a config file for Babel in the root directory (yup) called `.babelrc` (note that this file is JSON and not JavaScript, so it's far easier to mess up, and you can be sure you won't get a good error message if you do):
 
 !CREATE_FILE{language=json} .babelrc
 {
-  "presets": ["env"]
+  "presets": ["@babel/preset-env"]
 }
 !END CREATE_FILE
 
