@@ -13,7 +13,7 @@ To do this with Webpack, we'll need to set up [Babel](https://babeljs.io), which
 JavaScript compiler” which is also kindof what Webpack is.  The confusion lies around what is meant by the word “JavaScript”.  In
 Babel's case, it means “a newer version of JavaScript than your browser can produce”, which is *sort of* what Webpack can do as
 well.  Suffice it to say, Babel handles the newest version of JavaScript _most properly_, so we *do* need it to accomplish our
-goal of writing entirely in ES2015.
+goal of writing entirely in ES2015, but being able to rely on our code working in lots of browsers that don't support it.
 
 Let's write some! Replace `js/markdownPreviewer.js` with this:
 
@@ -42,16 +42,18 @@ won't work for all browsers, including ones we want to support.  Let's continue.
 
 First, we'll install babel.  Which, sadly, cannot be accomplished via `yarn add babel`.  Instead we must:
 
-!SH yarn add babel-core
+!SH yarn add @babel/core -D
+
+Yes, that is an `@` sign which is a [_scoped package_](https://docs.npmjs.com/misc/scope) and more and more big frameworks are
+using it to group their submodules.
 
 We'll also need the Babel loader for Webpack:
 
-!SH yarn add babel-loader
+!SH yarn add babel-loader -D
 
-Babel should process all JavaScript, so we'll configure the loader in `webpack/common.js` to handle all `.js` files, save for those
-in `node_modules`, which are already assumed to be ready for distribution to a browser:
+Babel should process all JavaScript, so we'll configure the loader in `config/webpack.common.config.js` to handle all `.js` files, save for those in `node_modules`, which are already assumed to be ready for distribution to a browser:
 
-!EDIT_FILE webpack/common.js /* */
+!EDIT_FILE config/webpack.common.config.js /* */
 {
   "match": "    rules: [",
   "insert_after": [
@@ -68,13 +70,13 @@ Of course, Babel doesn't automatically do anything, so we need more configuratio
 presets, but of course, none of them are actually pre-set.  We'll use the recommend “env” preset, which means “generally do the
 right thing without having to configure stuff”, which is a godsend, so we'll take it.
 
-!SH yarn add babel-preset-env
+!SH yarn add @babel/preset-env -D
 
 Now, create a config file for Babel in the root directory (yup) called `.babelrc` (note that this file is JSON and not JavaScript, so it's far easier to mess up, and you can be sure you won't get a good error message if you do):
 
 !CREATE_FILE{language=json} .babelrc
 {
-  "presets": ["env"]
+  "presets": ["@babel/preset-env"]
 }
 !END CREATE_FILE
 
@@ -88,98 +90,90 @@ Now, we can write modern JavaScript and not worry about what browsers actually s
 
 ## Using Modern JavaScript to Write Tests
 
-First, let's rewrite our test using ES2015:
+Our test files are pretty basic, so there's nothing exciting about using arrows as those will work with the version of Node we
+are using.  Instead, let's use an experimental feature called [optional
+chaining](https://babeljs.io/docs/en/babel-plugin-proposal-optional-chaining).  As of this writing, it's not supported by many
+browser or by Node.  It will also require adding a plugin to Babel to support, so this should be a good learning.
 
-!CREATE_FILE spec/markdownPreviewer.spec.js
+The way optional chaining works is to allow you to safely dereference a deep object without worrying about undefined:
+
+```javascript
+const o = {
+  foo: {
+    bar: "blah"
+   }
+};
+
+console.log(o?.foo?.bar); # => "blah"
+```
+
+We'll add this code as a test:
+
+!CREATE_FILE test/markdownPreviewer.test.js
 import markdownPreviewer from "../js/markdownPreviewer"
 
-const event = {
-  preventDefaultCalled: false,
-  preventDefault: function() { this.preventDefaultCalled = true; }
-};
-const source = {
-  value: "This is _some markdown_"
-};
-const preview = {
-  innerHTML: ""
-};
+describe("markdownPreviewer", () => {
+  it("should exist", () => {
+    expect(markdownPreviewer).toBeDefined();
+  });
+  it("should allow deep references", () => {
+    const o = {
+      foo: {
+        bar: "blah"
+       }
+    };
 
-const document = {
-  getElementById: (id) => {
-    if (id === "source") {
-      return source;
-    }
-    else if (id === "preview") {
-      return preview;
-    }
-    else {
-      throw "Don't know how to get " + id;
-    }
-  }
-}
-
-describe("markdownPreviewer", => {
-  describe("attachPreviewer", => {
-    it("renders markdown to the preview element", => {
-      const submitHandler = markdownPreviewer.attachPreviewer(document,
-                                                            "source",
-                                                            "preview");
-      source.value = "This is _some markdown_";
-
-      submitHandler(event);
-
-      expect(preview.innerHTML).toBe("<p>This is <em>some markdown</em></p>");
-      expect(event.preventDefaultCalled).toBe(true);
-    });
+    expect((o?.foo?.bar)).toBe("blah");
   });
 });
 !END CREATE_FILE
 
-If you run Karma now, you'll get an error on the new syntax.  Although Karma is using Babel to transpile our production code,
-   it's not doing that for the test code.  We'll need another preprocessor, `karma-babel-preprocessor`.
+This should fail with a huge stack about the syntax error we created:
 
-!SH yarn add karma-babel-preprocessor
+!SH{nonzero} yarn test
 
-Now, configure it in `spec/karma.conf.js`:
+To allow using this new feature, we'll add the babel plugin `@babel/plugin-proposal-optional-chaining` to our project:
 
-!EDIT_FILE spec/karma.conf.js /* */
+!SH yarn add @babel/plugin-proposal-optional-chaining -D
+
+To use this, we'll add the `plugins:` key in our `.babelrc` file:
+
+!CREATE_FILE{language=json} .babelrc
 {
-  "match": "      '**/*.spec.js': [ 'webpack', 'sourcemap' ]",
-  "replace_with": [
-    "      '**/*.spec.js': [ 'webpack', 'sourcemap', 'babel' ]"
-  ]
+  "presets": ["@babel/preset-env"],
+  "plugins": ["@babel/plugin-proposal-optional-chaining"]
 }
-!END EDIT_FILE
+!END CREATE_FILE
 
-Note that the addition of `'babel'` to the preprocessors must come *at the end* or it doesn't work.  Why?  Who knows?
+Now, when we re-run our tests, they pass, since the new syntax as transpiled by Babel:
 
-If your test file still has the error from before, or if you introduce one, you'll get a lovely new surprise - source maps no
-longer work.
+!SH yarn test
 
-<aside class="pullquote">Source maps no longer work</aside>
-
-While they do work in our production code, we no longer get the ability to see where in our test something failed.  Them's the
-breaks and it's currently not fixable in this setup.  Changing the order of the preprocessors doesn't work, nor does explicitly
-setting options for babel.  Even debugging this is difficult, because of how poorly all these tools are designed and how opaque
-their interoperability is.
-
-
-Such a letdown.  And it seems like a pretty fitting end to our journey.
+From here, you can configure Babel in a ton of ways.  Notably, you will need to use Babel if you want to use React and write JSX
+files.
 
 ## Where We Are
 
-It's not all bleak.  We started with some basic needs to manage JavaScript and Webpack has met them, and more.  We can write
-modular JavaScript, handle both development and production, run tests, and even use a new language.  What's better, the amount of
-configuration we had to add wasn't that large.
+We started with nothing, and we gradually changed our configuration to solve real problems.  In the end, what we have isn't bad!
+We can write modular JavaScript, use third party libraries and CSS, get useful stack traces, run unit tests, and bundle for
+production.  We can also use bleeding edge features of JavaScript while ensuring browser compatibility.  That's pretty good!
 
-!SH wc -l webpack.config.js webpack/*.js spec/karma.conf.js
+And, we didn't have to write a ton of configuration:
+
+!SH wc -l webpack.config.js config/webpack.*
 
 That's less than 100 lines total, and we have a completely workable development environment.
 
-Hopefully, you've learned a bit about why Webpack exists, and what it can (and can't) do.  I also hope you've learned to feel
-confident in your needs as a developer and comfortable pointing out when available tools aren't meeting those needs.  It doesn't
-mean the people that put their blood, sweat, and tears into them are bad people, but designing build tools is hard, and the
-JavaScript ecosystem has the widest variety of developers ever, so it's hard to please everyone.
+My hope is you have taken a few things away from this.  First, I hope you understand Webpack a bit better and can navigate it's
+basic features and learn what works and why.  Second, and more important, I hope you feel confident working with tools that just
+aren't very well designed for your needs.  I hope you feel validated when you feel frustrated by cryptic error messages that it's
+not just you.  I hope you feel like running to Google or browsing GitHub issues to find out how to use your tools is perfectly
+normal.
+
+Webpack clearly values moving fast and delivering features over ergonomics and predictability.  There's nothing inherently wrong
+with that tradeoff, but it means you have to shoulder the burden when things dont' work the first time, and they rarely do.
+Hopefully, you've seen that by taking small steps each time and changing very little in each step will allow you to understand
+what has broken this time and how you might fix it.
 
 That said, I want to spend the last chapter discussing the design decisions that I believe make this entire thing so difficult to
 deal with and what might make it all work better.  These are ways of thinking that help you build any application, even if it's

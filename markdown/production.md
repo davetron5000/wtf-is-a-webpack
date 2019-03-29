@@ -41,9 +41,9 @@ If we deployed our code to a content delivery network (which we are likely going
 
 So, we want to generate a file like `924giuwergoihq3rofdfg-bundle.js`, where `924giuwergoihq3rofdfg` changes each time our code changes.
 
-This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to be able to do this for us.  Turns out, it can, and we can save some configuration by using the production _mode_.
+This, along with minification, are basic needs for web development, and since Webpack is a monolithic system, we'd expect it to be able to do this for us.  Turns out, it can, and we can save some configuration by using the production _mode_.  Although we aren't going to use that since it is entirely opaque.
 
-## Webpack Modes
+## Webpack Modes are Not Needed for Now
 
 In our existing Webpack configuration, we saw the `mode` key, and it's set to `"none"`.  Per [Webpack's mode documentation](https://webpack.js.org/concepts/mode/), this disables all optimizations.
 
@@ -56,7 +56,7 @@ users.
 
 While the thought of a production mode that configures all the stuff we need automatically is nice, Webpack hasn't built much
 trust here, and I'm pretty uneasy using a bunch of undocumented plugins, even if they *are* recommended by the Webpack
-developers.  Stuff like [NoEmitOnErrorsPlugin](https://webpack.js.org/configuration/optimization/#optimization-noemitonerrors) seem dangerous—why would you want your build tool to swallow errors an exit zero if something went wrong?
+developers.  Stuff like [NoEmitOnErrorsPlugin](https://webpack.js.org/configuration/optimization/#optimization-noemitonerrors) seem dangerous—why would you want your build tool to swallow errors and exit zero if something went wrong?
 
 Let's not opt into any of this and add configuration explicitly so we know what's going on.  We'll leave the `mode` key as
 `"none"` for now.
@@ -86,7 +86,7 @@ case, we can set the `minimize` key to `true` in the `optimization` key.
 We haven't seen the `optimization` key before, and if you look at the documentation for production mode, it shows a lot of
 options being set in there.
 
-For our needs, setting [`optimization` to true](https://webpack.js.org/configuration/optimization/#optimization-minimize) will
+For our needs, setting [`minimize` to true](https://webpack.js.org/configuration/optimization/#optimization-minimize) will
 configure the `TerserWebpackPlugin` for us, so let's try it.
 
 Your `webpack.config.js` should look like so:
@@ -181,7 +181,7 @@ Since we don't have much configuration now, this shouldn't be a problem.
 
 First, install webpack-merge:
 
-!SH yarn add webpack-merge
+!SH yarn add -D webpack-merge
 
 Now, to create our _four_ configuration files.  I'm willing to tolerate one configuration file at the
 top-level, but not four.  So, we'll be putting the dev, production, and common in a new directory, called
@@ -333,9 +333,9 @@ with the bundle name for our production build.
 
 The [HtmlWebpackPlugin](https://github.com/jantimon/html-webpack-plugin) was designed to do this!
 
-First, install it (note we have to use master here since a Webpack 5-compatible version hasn't been released yet):
+First, install it:
 
-!SH yarn add https://github.com/jantimon/html-webpack-plugin
+!SH yarn add -D html-webpack-plugin
 
 By default, this plugin will produce an `index.html` file from scratch that brings in our bundle.  Since we have particular markup that we need for our app, we need a way to specify a template.  `HtmlWebpackPlugin` allows us to specify one to use and, if it's just straight-up, normal HTML, the plugin will insert the `<script>` tag in the right place.
 
@@ -391,7 +391,7 @@ Now, run Webpack
 
 !SH yarn webpack
 
-If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag (at the bottom, and messing up our indentation):
+If you look at `dev/index.html`, you can see Webpack inserted a `<script>` tag (at the bottom, and messed up our indentation):
 
 !SH cat dev/index.html
 

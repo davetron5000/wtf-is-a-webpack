@@ -15,16 +15,9 @@ Ideally, we want the ability to:
 
 There are many JavaScript testing frameworks, though even the definition of what a _testing framework_ is is unclear.  According
 to the [State of JavaScript 2018 testing results](https://2018.stateofjs.com/testing/overview/), Jest and Mocha are the top
-contenders for most popular.  We'll go with [Jest][jest] since it just eeks out Mocha and has higher growth, so likely to be a solid
-contender.
+contenders for most popular.  We'll go with [Jest][jest] since it just eeks out Mocha and has higher growth, so likely to be a solid contender.
 
-[Jasmine][jasmine] fits that bill.  It's reasonably popular and easy to understand.
-
-[jest]: https://jestjs.io
-
-First, we'll add it to our `package.json`.  We'll use `yarn add` again, but pass `-D` which means "this is a
-development dependency".  That's important because when we get around to shipping our awesome Markdown previewer to
-production, we don't need our development dependencies to be part of that.
+First, we'll add it to our `package.json`.  We'll use `yarn add` again.
 
 !SH yarn add -D jest
 
@@ -178,7 +171,8 @@ Here's how `test/webpack.test.config.js` should look:
   "insert_after": [
     "const glob = require('glob');",
     "",
-    "const testFiles = glob.sync(\"**/*.test.js\").filter(function(element) {",
+    "const testFiles = glob.sync(\"**/*.test.js\").",
+    "                       filter(function(element) {",
     "  return element != \"test/bundle.test.js\";",
     "}).map(function(element) {",
     "  return \"./\" + element;",
@@ -202,7 +196,7 @@ that as an exercise for you.
 
 There are two potential problems with this setup that we aren't going to worry about.  The first is that we have to run webpack
 and then jest every time we change any file.  While we've wrapped that in a convenient alias in `package.json`, it could be slow
-as our project grow.  Because of Webpack's design, we can't really do much about this other than hope a module is created to
+as our project grows.  Because of Webpack's design, we can't really do much about this other than hope a module is created to
 address the issue, or learn essentially of all Webpack's internals.  Both of those options suck, so let's revisit this issue if
 it becomes a real problem.
 

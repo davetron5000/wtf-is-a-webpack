@@ -111,9 +111,6 @@ body header {
   p {
     font-family: avenir next,avenir,sans-serif;
     font-weight: 500;
-    @media screen and (min-width: 30em) {
-      font-weight: 500;
-    }
     text-align: justify;
     text-indent: $sz2;
   }
@@ -297,7 +294,10 @@ aside.toc {
     padding: $sz3;
     margin: auto;
     text-align: left;
-    width: 430px;
+    width: 80%;
+    @media screen and (min-width: 30em) {
+      width: 430px;
+    }
   }
   a, li {
     @include header-font;

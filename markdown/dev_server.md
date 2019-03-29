@@ -17,7 +17,7 @@ Webpack is super slow:
 
 !SH time yarn webpack
 
-When designing a UI, you need to change markup, CSS, and JavaScript.  It's often not possible to assure that JavaScript is providing the UI interactions you want without trying it, and that's lots of small changes that you reload in the browser.  Having to wait 3+ seconds each time sucks.
+When designing a UI, you need to change markup, CSS, and JavaScript.  It's often not possible to assure that JavaScript is providing the UI interactions you want without trying it, and that's lots of small changes that you reload in the browser.  Having to wait a few seconds or more each time sucks.
 
 We can make this a bit better by using `webpack-dev-server`, which we can install with yarn:
 
@@ -29,7 +29,7 @@ Once this is done, run it with the `--open` flag, and your application will pop 
 > $(yarn bin)/webpack-dev-server --open
 ```
 
-This will compile your app and load it, so it will take the same 4+ seconds as before.
+This will compile your app and load it, so it will take the same time as before.
 
 Next, open up `css/styles.css` in your editor, and arrange your windows so that you can see both your editor *and* your browser.  Make a change to the CSS, and viola, your browser refreshes with that change. Repeat with `html/index.html` and `js/index.js`.  Not too bad.
 
@@ -41,46 +41,49 @@ What about tests?
 
 ## Auto-reloading in Tests
 
-When we learned about Karma, we gave it the `--single-run` flag.  We later saw that omitting this starts up a server you can use
-to run your tests in any  browser.  This server also watches for changes in our code and tests and re-runs them automatically.
+Since our testing workflow is to build the bundle with our tests, then point Jest at that bundle, we can't really use the webpack
+dev server for this.  The dev server expects to send code to the browser directly, and there's no browser for tests.
 
-```shell
-> $(yarn bin)/karma start spec/karma.conf.js
-Hash: e0bdc8cc97632b01d813
-Version: webpack 3.0.0
-Time: 40ms
-webpack: Compiled successfully.
-webpack: Compiling...
-webpack: wait until bundle finished:
-Hash: 45c62a5c6505ba4e17fb
-Version: webpack 3.0.0
-Time: 176ms
-                  Asset     Size  Chunks             Chunk Names
-         canary.spec.js   2.6 kB       0  [emitted]  canary.spec.js
-markdownPreview.spec.js  78.8 kB       1  [emitted]  markdownPreview.spec.js
-   [0] ./spec/canary.spec.js 107 bytes {0} [built]
-   [1] ./spec/markdownPreview.spec.js 1.23 kB {1} [built]
-   [2] ./js/markdownPreviewer.js 381 bytes {1} [built]
-   [3] ./node_modules/markdown/lib/index.js 143 bytes {1} [built]
-   [4] ./node_modules/markdown/lib/markdown.js 51 kB {1} [built]
-   [5] ./node_modules/util/util.js 15.6 kB {1} [built]
-   [6] (webpack)/buildin/global.js 509 bytes {1} [built]
-   [7] ./node_modules/process/browser.js 5.42 kB {1} [built]
-   [8] ./node_modules/util/support/isBufferBrowser.js 203 bytes {1} [built]
-   [9] ./node_modules/util/node_modules/inherits/inherits_browser.js 672 bytes {1} [built]
-webpack: Compiled successfully.
-25 06 2017 11:32:38.096:WARN [karma]: No captured browser, open http://localhost:9876/
-25 06 2017 11:32:38.103:INFO [karma]: Karma v1.7.0 server started at http://0.0.0.0:9876/
-25 06 2017 11:32:38.104:INFO [launcher]: Launching browser PhantomJS with unlimited concurrency
-25 06 2017 11:32:38.108:INFO [launcher]: Starting browser PhantomJS
-25 06 2017 11:32:38.928:INFO [PhantomJS 2.1.1 (Mac OS X 0.0.0)]: Connected on socket l1dBRG0VGQoUpBORAAAA with id 2070764
-PhantomJS 2.1.1 (Mac OS X 0.0.0): Executed 2 of 2 SUCCESS (0.012 secs / 0.008 secs)
+What we *can* do is use the `--watch` flag of Webpack to have it auto-rebuild the bundle when files it depends on change.  We can
+also test Jest to re-run tests when the bundle changes.  Let's add two new npm scripts, one called `webpack:test:server` and the
+other called `jest:server`, like so:
+
+!PACKAGE_JSON
+{
+  "scripts": {
+    "webpack": "webpack $npm_package_config_webpack_args",
+    "webpack:production": "webpack $npm_package_config_webpack_args --env=production",
+    "webpack:test": "webpack $npm_package_config_webpack_args --env=test",
+    "jest": "jest test/bundle.test.js",
+    "test": "yarn webpack:test && yarn jest",
+    "webpack:test:server": "webpack $npm_package_config_webpack_args --env=test --watch",
+    "jest:server": "jest test/bundle.test.js --watch"
+  }
+}
+!END PACKAGE_JSON
+
+Now, open three terminals.  In one, start webpack:
+
+```
+> yarn webpack:test:server
+
+« standard massive webpack output»
+
 ```
 
-Your tests might still be broken from the last chapter, so, without stopping Karma, fix the tests.  They should automatically
-re-run without doing anything.  Nice!
+In the other, start Jest:
 
-What this means is that by running Karma all the time, you can work quickly with a TDD flow, and when you need to switch to
-in-browser design or tweaking, running the Webpack dev server lets you work quickly there, too.
+```
+> yarn jest:server
+
+«test runs»
+
+```
+
+In the third, edit one of your test to add a new `it`.  You should see your new test get auto-run by Jest.
+
+Both Webpack and Jest are re-running themselves when files change.  This isn't bad.  It's not *great* because we have to create
+our bundle each time, but it's not bad.  If our project gets very large, this situation might not work, and then we're into a
+strange and painful world of getting Jest to work more directly with Webpack, which seems to not be well supported.
 
 There's one last thing we need to look into, and that's the ability to use a better language than JavaScript Since Webpack is essentially compiling our JavaScript and CSS, it stands to reason that if we wanted to use something like TypeScript or ES2015, it should be able to handle that.

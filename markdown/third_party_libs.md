@@ -26,13 +26,9 @@ could think of is a markdown previewer.  There's a [markdown module][markdown] w
 
 First, we'll add it to our `package.json` file using `yarn add`:
 
-!SH yarn add markdown util
+!SH yarn add markdown
 
-This will also run `yarn install` which will download the markdown package to `node_modules`. Note that we had to include the
-`util` module, as Webpack 5 no longer includes Node polyfills. I don't really know what that means, and in most other languages
-if a module needs another module, it gets installed via the package management system.  In this case, some combination of Node,
-JavaScript, and Webpack have decided that is not either possible or desired, so we have to manually manage some—but not
-all—transitive dependencies.
+This will also run `yarn install` which will download the markdown package to `node_modules`.
 
 Let's create our HTML first by replacing `dist/index.html` with the following:
 

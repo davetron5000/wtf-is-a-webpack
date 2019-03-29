@@ -26,24 +26,17 @@ Webpack can produce sourcemaps.  The configuration option is, of course, not cal
 <aside class="pullquote">The configuration option is, of course, not called something intuitive like <code>sourceMap</code></aside>
 
 The possible values for `devtool` are many, and poorly documented.  Since we have different configurations
-for production and development, we can use different source map strategies.  For production, we'll use
-`source-map` as that contains the most information and is designed for production.
+for production and development, we can use different source map strategies.  Let's try dev first as that's where we need the most
+help.
 
-In `webpack/production.js`:
+The docs' first recommandation is `eval` which, and I'm not making this up, is documented to not work at all:
 
-!EDIT_FILE webpack/production.js /* */
-{
-  "match": "  },",
-  "insert_after": [
-    "  devtool: \"source-map\","
-  ]
-}
-!END EDIT_FILE
+> This [`eval`] is pretty fast. The main disadvantage is that it doesn't display line numbers correctly
 
-For development, we want the fastest thing possible that shows the most information.  I *think* that's
-`inline-source-map`, but the docs are unclear.  It works, so we'll use it:
+Like…why am I using source maps if I am also OK with the line numbers being wrong?  That's the entire point of source
+maps.  Ugh.  Unfortunately, the second choice, `eval-source-map` works for JS and not for CSS. So, we'll go with `inline-source-map` which, so far, works for both.  Add it to `config/webpack.dev.config.js` like so:
 
-!EDIT_FILE webpack/dev.js /* */
+!EDIT_FILE config/webpack.dev.config.js /* */
 {
   "match": "  },",
   "insert_after": [
@@ -66,64 +59,27 @@ If you are in Chrome and click the stack, it even shows you the code where the e
 
 Nice!
 
-Let's check our production configuration to make sure there's no issue:
+Unfortunately, we cannot enable source maps in production.  While it *is* documented to work, it actually doesn't.  The
+documentation provides for several different production-quality source map configurations and none of them produce usable source
+maps at this time.
 
-!SH yarn prod
+The reason this is so bad is that in a real production application, we will have some level of error monitoring.  We need to know
+if there are real errors in the front-end and where they are happening.  Without source maps we cannot know that (especially when minifying).
 
+This means that for production we either use a development-style source map (which increases our bundle size), or we don't get
+source maps at all.  Welp.
 
 What about our CSS?  Sometimes it's nice to know where certain styles are defined or where they came from.
 
 ## Sourcemaps for CSS
 
-To see what I mean, open up your app, and inspect an element.  Your browser should show you the CSS of the element in question and should show you where those classes are defined.  They will all be line 1 of your `.css` bundle.
+If you remove the configuration we just made, reload your app, inspect and element and examine the styles, you'll see they are
+all defined somewhere in `styles.css`.  That is obviously not true.  If you restore the use of `inline-source-map` in dev, you
+should see that the definition of styles is correctly mapped to where those styles were defined.
 
-Making this work is slightly tricky, because we have to expand the configuration given to `ExtractTextPlugin`.  The way it's designed is that it takes the exact same options as `use:`, which are currently:
-
-```javascript
-{
-  use: "css-loader"
-}
-```
-
-We need to pass `sourceMap: true` (**not** `devtool`—go figure) as an option, but there is no place to add options.  The syntax we are using is a short-form of this syntax:
-
-```javascript
-{
-  use: {
-    loader: "css-loader",
-    options: {}
-  }
-}
-```
-
-And *there* is a place to add options.  We want to pass a structure like that to `ExtractTextPlugin`, so the full change in `webpack/common.js` is:
-
-
-!EDIT_FILE webpack/common.js /* */
-{
-  "match": "          use: 'css-loader'",
-  "replace_with": [
-		"          use: {",
-		"            loader: \"css-loader\",",
-		"            options: {",
-		"              sourceMap: true",
-		"            }",
-		"          }"
-  ]
-}
-!END EDIT_FILE
-
-If you run Webpack:
-
-!SH yarn webpack
-
-And repeat the steps to inspect an element, you'll now see the correct line numbers in the files where the classes are defined.
-
-Don't forget to try with production:
-
-!SH yarn prod
-
-Nice!
+As with JS, it's not possible to get this to work in production mode while style hashing and minifying our CSS.  This is less of
+an issue because CSS doesn't generate stack traces, but it still sucks that the tool documents a thing that doesn't actually
+work.
 
 What about tests?
 
@@ -133,94 +89,107 @@ If we introduce a failure into our tests, we'll see a stack trace, but the line 
 
 First, remove the `throw` you added before from `js/markdownPreviewer.js`.  Next, let's introduce a test failure in our test.
 
-Here's our entire test file with a failure introduced:
+Since our test isn't a real test, we'll replace the expectation that we've loaded our code with a nonsense test that `undefined` is defined:
 
-!EDIT_FILE spec/markdownPreview.spec.js /* */
+!EDIT_FILE test/markdownPreviewer.test.js /* */
 {
-  "match": "      expect(preview.innerHTML).toBe",
+	"match": "    expect(markdownPreviewer).toBeDefined();",
   "replace_with": [
-    "      expect(preview.innerHTML).toBe(\"<p>This is <i>some markdown</em></p>\");",
-    "      // --FAILURE--------------------------------^^^",
-    "      //"
-  ]
-},
-{
-  "match": "        \"<p>This is <em>some markdown</em></p>\");",
-  "replace_with": [ "" ]
-}
-!END EDIT_FILE
-
-!SH{nonzero} yarn karma
-
-Although it seems like our Webpack configuration should include the sourcemaps, even for the test code, for whatever reason it doesn't, and we have to set up an additional preprocessor for Karma to include them.
-
-That preprocessor is `karma-sourcemap-loader`, which we can install thusly:
-
-!SH yarn add karma-sourcemap-loader -D
-
-We configure it *after* the Webpack preprocessor, like so:
-
-!EDIT_FILE spec/karma.conf.js /* */
-{
-  "match": "      '**/*.spec.js': [ 'webpack'",
-  "replace_with": [
-    "      '**/*.spec.js': [ 'webpack', 'sourcemap' ]"
+	  "    expect(undefined).toBeDefined();"
   ]
 }
 !END EDIT_FILE
 
-Now, when we run karma, we should see the stack trace reference a line in our test file:
+!SH{nonzero} yarn test
 
-!SH{nonzero} yarn karma
+As you can see, the stack trace Jest generates references a line of code in our bundle and not the test.  Fortunately, we can get this by setting up `devtool` in our test webpack config, which you'll recall is still totally separate.  Let's keep it that way for now and use the `inline-source-map` devtool we use in our dev configuration:
 
-It does reference a line, which is great, but it's not the correct one, which is not great.
+!EDIT_FILE test/webpack.test.config.js /* */
+{
+	"match": "  entry: testFiles,",
+  "insert_after": [
+    "  devtool: \"inline-source-map\","
+  ]
+}
+!END EDIT_FILE
 
-As of this writing, PhantomJS does not properly read the sourcemap and reports the wrong line number.  This sucks, but all is not lost!
+Now, when we run our test again, we should see correct line numbers!
 
-If you recall, we've been using the command line switch `--single-run` to run our tests.  If we omit that, Karma will run our tests and then sit there, waiting.
+!SH rm test/bundle.test.js
 
-```
-> $(yarn bin)/karma start spec/karma.conf.js
-```
+!SH{nonzero} yarn test
 
-If you look at the output, it will show something like this:
+Amazing, yeah?  Let's now take some time to consolidate our Webpack configurations.
 
-```
-22 04 2017 14:36:17.997:INFO [karma]: Karma v1.6.0 server started at http://0.0.0.0:9876/
-```
+## Consolidate Test Webpack Config
 
-If you navigate to that url and port in your web browser, Karma will run your tests in that browser!  If we do this in Chrome, the stack trace is correct:
+The more we start configuring Webpack, we run a risk of diverging critical things if our test configuration isn't kept up to
+date.  Even though it's currently fairly different, let's consolidate it now so when we add more configuration we are forced to
+decide if that should apply to testing or not.
 
-```
-22 04 2017 14:37:02.819:INFO [Chrome 57.0.2987 (Mac OS X 10.12.4)]: Connected on socket 7nP6V7W0YsH5C0f4AAAB with id manual-9961
-PhantomJS 2.1.1 (Mac OS X 0.0.0) markdownPreviewer attachPreviewer renders markdown to the preview element FAILED
-	Expected '<p>This is <em>some markdown</em></p>' to be '<p>This is <i>some markdown</em></p>'.
-	webpack:///spec/markdownPreview.spec.js:40:0 <- markdownPreview.spec.js:1:77552
-	loaded@http://localhost:9876/context.js:162:17
-Chrome 57.0.2987 (Mac OS X 10.12.4) markdownPreviewer attachPreviewer renders markdown to the preview element FAILED
-	Expected '<p>This is <em>some markdown</em></p>' to be '<p>This is <i>some markdown</em></p>'.
-	    at Object.<anonymous> (http://0.0.0.0:9876webpack:///spec/markdownPreview.spec.js:40:0 <- markdownPreview.spec.js:1:26111)
-PhantomJS 2.1.1 (Mac OS X 0.0.0): Executed 3 of 3 (1 FAILED) (0.005 secs / 0.006 secs)
-Chrome 57.0.2987 (Mac OS X 10.12.4): Executed 3 of 3 (1 FAILED) (0.045 secs / 0.008 secs)
-TOTAL: 2 FAILED, 4 SUCCESS
-```
+Create `config/webpack.test.config.js` like so:
 
-It's hard to make out, but you can see that the Chrome run of the test is pointing to line 40, which is where the failing expectation is.
+!CREATE_FILE config/webpack.test.config.js
+const path         = require('path');
+const glob         = require('glob');
+const Merge        = require('webpack-merge');
+const CommonConfig = require('./webpack.common.config.js');
 
-It's not ideal, but it *is* a way to get stack traces for your tests.
+const testFiles = glob.sync("**/*.test.js").
+                       filter(function(element) {
+  return element != "test/bundle.test.js";
+}).map(function(element) {
+  return "./" + element;
+});
 
-You can hit Ctrl-C to exit Karma.
+module.exports = Merge(CommonConfig, {
+  entry: testFiles,
+  output: {
+    path: path.join(__dirname, '../test'),
+    filename: 'bundle.test.js'
+  },
+  devtool: "inline-source-map",
+  mode: "none"
+});
+!END CREATE_FILE
 
-This isn't the greatest ending to our desire to have stack traces, but at least it's something, and at least it's possible.
+Let's delete the old file to avoid confusion:
 
-We can also start to see the tension between monolithic everything-is-included systems like Webpack, and its attempts at modularity and flexibility.  Because neither Webpack nor Karma were designed to work together, and because each tool has a completely proprietary plugin/extension mechanism, we have to jump through a lot of hoops to get them to cooperate.  I'll touch on this later toward the end of our journey, but suffice it to say, the design of these tools seems to have the worst of being monolithic and being modular.
+!SH rm test/webpack.test.config.js
 
-<aside class="pullquote">The design of these tools seems to have the worst of being monolithic and being modular.</aside>
+Now, we'll change our npm script in `package.json`, so the `scripts` section looks like so:
 
-So, what's next?
+!PACKAGE_JSON
+{
+  "scripts": {
+    "webpack": "webpack $npm_package_config_webpack_args",
+    "webpack:production": "webpack $npm_package_config_webpack_args --env=production",
+    "webpack:test": "webpack $npm_package_config_webpack_args --env=test",
+    "jest": "jest test/bundle.test.js",
+    "test": "yarn webpack:test && yarn jest"
+  }
+}
+!END PACKAGE_JSON
 
-Our setup is pretty good so far, and we haven't written that much configuration—less than 100 lines!
+And with that, `yarn test` should still run (and fail showing us a good stack trace):
+
+!SH{nonzero} yarn test
+
+Let's go ahead and undo our change to the test before we move on:
+
+!EDIT_FILE test/markdownPreviewer.test.js /* */
+{
+  "match": "    expect(undefined).toBeDefined();",
+  "replace_with": [
+		"    expect(markdownPreviewer).toBeDefined();"
+	]
+}
+!END EDIT_FILE
+
+And now our tests are passing again:
+
+!SH yarn test
 
 With what we have now, we can get really far, but let's add one more tweak to our dev environment, and configure auto-reloading
-of code and tests as we make changes.
+of code as we make changes.
 

@@ -62,15 +62,15 @@ But, you can change that default, basically controlling Webpack's internal machi
 
 To load CSS, we'll install `css-loader`:
 
-!SH yarn add css-loader -D
+!SH yarn add -D css-loader
 
 (This is an amazing amount of code to do what will ultimately be concatenating some CSS files together)
 
 To use this loader, we'll add a new section to our Webpack configuration, called `module`.  This gives us a peek into how Webpack views itsef.  The `modules` section controls how Webpack treats different types of modules we might import.  This statement implies that there *are* types other than just JavaScript.  It's starting to make sense.
 
-Inside `module:`, we create a `rules:` array, which will itemize out all the rules for handling modules that aren't JavaScript.  Each rule has a test, and a loader to use.  This goes in `webpack/common.js`, since we need it for dev and prod:
+Inside `module:`, we create a `rules:` array, which will itemize out all the rules for handling modules that aren't JavaScript.  Each rule has a test and a loader to use.  This goes in `config/webpack.common.config.js`, since we need it for dev and prod:
 
-!EDIT_FILE webpack/common.js /* */
+!EDIT_FILE config/webpack.common.config.js /* */
 {
   "match": "  plugins: ",
   "insert_before": [
@@ -113,40 +113,43 @@ If we open up `dev/index.html` in your browser, the CSS isn't being applied.  BU
 
 There is a loader called the style-loader that would dynamically create a `<style>` tag in our DOM and put the CSS in there, but that's no good.  We want the browser to load CSS separately, so it can download both the CSS *and* the JS in parallel.
 
-We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [ExtractTextPlugin](https://webpack.js.org/plugins/extract-text-webpack-plugin/).  Despite its generic name, it appears created to solve this specific problem.
+We need to tell Webpack that our CSS that gets loaded should be placed into a separate output file.  This can be done with the [MiniCssExtractPlugin](https://webpack.js.org/plugins/mini-css-extract-plugin/). 
 
-!SH yarn add extract-text-webpack-plugin  -D
+!SH yarn add -D mini-css-extract-plugin
 
-`ExtractTextPlugin` provides the function `extract` which will create a custom loader that, when we also use `ExtractTextPlugin` as a _plugin_, will write out our CSS to a file.  We can even use the magic `"[chunkhash]"` inside the filename to get the hash in there!
+To use this plugin requires two bits of configuration.  The first is to configure it as a loader by calling `extract` on it.  The
+next is to configure it as a plugin by creating a new instance of it.  It supports the filename configuration format, so we can
+put `[contenthash]` in the filename to get hashing.
 
-Here's what our common Webpack configuration now looks like:
+First, we'll use the loader, which is set up in our common configuration:
 
-!EDIT_FILE webpack/common.js /* */
+!EDIT_FILE config/webpack.common.config.js /* */
 {
   "match": "const HtmlPlugin",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require('mini-css-extract-plugin');"
   ]
 },
 {
   "match": "        use: 'css-loader'",
   "replace_with": [
-    "        use: ExtractTextPlugin.extract({",
-    "          use: 'css-loader'",
-    "        })"
+    "        use: [",
+    "          MiniCssExtractPlugin.loader,",
+    "          \"css-loader\"",
+    "        ]"
   ]
 }
 !END EDIT_FILE
 
-We also need to tell `ExtractTextPlugin` what name to use.  Because we want this file hashed, the same as
-our JavaScript, we'll need to specify some configuration in `webpack/dev.js` and `webpack/production.js`.
-Here's what `webpack/dev.js` will look like
+Now, to configure the plugin.  We need different configurations for production and development.
 
-!EDIT_FILE webpack/dev.js /* */
+Here's what `config/webpack.dev.config.js` will look like
+
+!EDIT_FILE config/webpack.dev.config.js /* */
 {
   "match": "const CommonConfig",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require(\"mini-css-extract-plugin\")"
   ]
 },
 {
@@ -154,19 +157,19 @@ Here's what `webpack/dev.js` will look like
   "replace_with": [
     "  },",
     "  plugins: [",
-    "    new ExtractTextPlugin('styles.css')",
+    "    new MiniCssExtractPlugin({ filename: \"styles.css\" })",
     "  ]"
   ]
 }
 !END EDIT_FILE
 
-And, for `production.js`:
+And, for `config/webpack.production.config.js`:
 
-!EDIT_FILE webpack/production.js /* */
+!EDIT_FILE config/webpack.production.config.js /* */
 {
   "match": "const CommonConfig",
   "insert_after": [
-    "const ExtractTextPlugin = require('extract-text-webpack-plugin');"
+    "const MiniCssExtractPlugin = require(\"mini-css-extract-plugin\")"
   ]
 },
 {
@@ -174,8 +177,8 @@ And, for `production.js`:
   "replace_with": [
     "  },",
     "  plugins: [",
-    "    new ExtractTextPlugin('[chunkhash]-styles.css')",
-    "  ]"
+    "    new MiniCssExtractPlugin({ filename: \"styles-[contenthash].css\" })",
+    "  ],"
   ]
 }
 !END EDIT_FILE
@@ -199,10 +202,9 @@ Now, when we run Webpack, our CSS file is being created separately and is availa
 
 **And**, when we build for production, it uses the hashed name:
 
-!SH yarn prod
+!SH yarn webpack:production
 !SH ls production/*.css
 !SH cat production/index.html
-
 
 
 Sure enough, if we open up either `dev/index.html` or `production/index.html`, the CSS is working:
@@ -211,11 +213,9 @@ Sure enough, if we open up either `dev/index.html` or `production/index.html`, t
 
 Nice!
 
-And, since we're using `-p` for our production build, the CSS is being minified automatically.
-
 Let's bring in a third-party CSS library to make sure that works as expected.
 
-## Third-party CSS Libraries
+## Third Party Modules that Have CSS
 
 I don't like writing CSS.  I *do* like using re-usable/functional CSS and not snowflake/“semantic” CSS, which is why we're going to use [Tachyons](http://tachyons.io/). If I were to write a “What problem does it solve?” for functional CSS like Tachyons, I'd just point you to [this article by Tachyons' author Adam Morse](http://mrmrs.github.io/writing/2016/03/24/scalable-css/), which explains it.
 

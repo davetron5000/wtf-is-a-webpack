@@ -14,8 +14,10 @@ task :clean do
   end
 end
 
+task default: :build
+
 desc "Build it all"
-task :default do
+task :build do
   book = Bookdown::Book.new(
                 src_dir: ".",
       static_images_dir: "images",

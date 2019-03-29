@@ -117,7 +117,7 @@ allows us to recreate our system whenever we want without having to re-execute a
 
 This will create an empty `package.json` for us.  Now, let's install Webpack!  Note that the CLI is a separate module.
 
-!SH{quiet} yarn add webpack@5.0.0-alpha.1 webpack-cli
+!SH{quiet} yarn add -D webpack webpack-cli
 
 Holy moly is that a lot of stuff!  I find it anxiety-inducing to watch the sheer volume of code being downloaded, and often
 wonder what problem *that* solves, but nevertheless, it should work.  There will be ASCII art.  There will be warnings that you
@@ -208,7 +208,7 @@ What we want is to produce a singe file called `bundle.js` that uses all this co
 
 We can do this without configuration per se, and just use CLI options:
 
-!SH $(yarn bin)/webpack  --mode=development --entry ./js/index.js  --output-filename=bundle.js
+!SH $(yarn bin)/webpack  --mode=none --entry ./js/index.js  --output-filename=bundle.js
 
 Now, let's load this in a browser.  Create `index.html` like so:
 
@@ -216,13 +216,15 @@ Now, let's load this in a browser.  Create `index.html` like so:
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="bundle.js"></script>
+    <script src="dist/bundle.js"></script>
   </head>
   <h1>Open the Web Inspector</h1>
 </html>
 !END CREATE_FILE
 
-Open this in a browser, then open the JavaScript console.  You should see all our messages:
+Note that we're referencing `dist/bundle.js` instead of `bundle.js`.  This is because,  despite the fact that webpack's CLI clearly documents that bundle file will be written to the current directory, it still writes it to do `dist`.  It's OK, we'll be moving on from this soon enough, so for now, it's Just How it Is™.
+
+Open `index.html` in a browser, then open the JavaScript console.  You should see all our messages:
 
 !DUMP_CONSOLE index.html
 

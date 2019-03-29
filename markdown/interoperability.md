@@ -1,20 +1,21 @@
 Everything you've read up to now was learned by me as I was writing this.  I didn't start this with *any* of the information in
 here.  I was surprised at how counter-intuitive each step ended up being—I can totally see why there are so many blog posts
-describing how to set it up.  From a test runner that can't run tests, to a system that supports presets, but includes none of
-them, I was faced with many choices along the way, but also faced with completely opaque systems whose behavior and failure modes
-were unpredictable.
+describing how to set it up.  As I've revised this for changes in Webpack and other tools, it hasn't gotten better. The process
+of maintaining this minimal setup is an exercise in rote memorization, because nothing makes any intuitive sense.  The behavior
+of these tools is opaque and unpredictable, with failure modes that rarely give any indication of the real problem.
 
-Nevertheless, we got it all working and the amount of configuration wasn't that bad.  Still, each step felt like a battle, because the tools weren't designed to interoperate, each with its own ecosystem of plugins, and nothing exposed how it was working.
+Nevertheless, we got it all working and the amount of configuration wasn't that bad in the end.  Still, each step felt like a battle, because despite being part of the Webpack ecosystem for the most part, the tools and modules just don't seem to work well together.
 
-I also don't like aimless criticism without alternatives.  This final page is about that, and it's going to be about _interoperability_ and _developer ergonimics_.
+That said I don't want to just complain.  I do want to outline what I think are the two ways these tools could be designed.  In
+my view, developer tools must be designed around _interoperability_ and _developer ergonimics_.
 
 ## Interoperabilty
 
 Two pieces of software interoperate when they can work together to solve a larger problem that neither can solve on their own. We
-saw this time and time again in our journey.  We saw that Jasmine provided a library to write tests, but lacked the ability to load and execute our code.  Karma could load our code, but provides no way to write tests.  Webpack provides the ability to load CSS, but only with the  `ExtractTextPlugin` could we write it to a file.
+saw this time and time again in our journey.  We saw that Jest provided a library to write tests, but lacked the ability to load and execute our code.  Webpack can package our code so it can be tested, but it just doesn't interoperate without an up-to-date plugin exists, and that is usually not the case.
 
-Webpack and Karma's interoperability is completely opaque to the user.  This means that you have *no* way to know how the tools
-are working or even observe them working together without debugging into the source code.  As a tool developer, the situation is difficult, because everything is very custom.  In Webpack's case, each type of integration is different.  To write your own loader, you [implement a nebulous interface](https://webpack.js.org/development/how-to-write-a-loader/).  Writing a plugin is [highly complex](https://webpack.js.org/development/how-to-write-a-plugin/).  Any tool that must be a part of Webpack or Karma, must have a plugin for each.
+The interoperability between all these parts is also totally opaque.  This means that you have *no* way to know how the tools
+are working or even observe them working together without debugging into the source code.  As a tool developer, the situation is difficult, because everything is very custom.  In Webpack's case, each type of integration is different.  To write your own loader, you [implement a nebulous interface](https://webpack.js.org/development/how-to-write-a-loader/).  Writing a plugin is [highly complex](https://webpack.js.org/development/how-to-write-a-plugin/).
 
 The JavaScript ecosystem is rife with this sort of opaque interoperability.  Each tool has its own created-from-first-principles plugin system.  This leads to meta-plugins like [gulp-grunt](https://www.npmjs.com/package/gulp-grunt) that allows plugins written for Gulp to be used in Grunt (or vice versa—it doesn't matter).
 
@@ -27,8 +28,7 @@ being told the answer, because figuring it out is difficult.
 
 To make matters more confusing, tools often provide built-in functions for some common things, but not others.  In Webpack, we
 can configure source maps without a plugin, we can configure minification with a built-in plugin, but we cannot process CSS
-without a manually-installed loader.  And then there's Karma, which, as mentioned, is a test runner that cannot run tests by
-default.
+without a manually-installed loader.
 
 These tools all seem to be confused about their scope.  Are they small, single-purpose tools, or monolithic integrated systems?
 They are almost all hybrids.  They attempt to be extensible, but in opaque, inconsistent, or undocumented ways, while also being monolithic, but with terrible _developer erogonomics_.
@@ -404,8 +404,7 @@ The benefits to such a framework are many:
 
 * Because the framework is integrated, and not cobbling together existing tools (as most JS boilerplates do), it can be tested,
   designed, and evolved as one unit.  No oddball interactions from disparate dev teams working on incompatible tools.
-* Developers can go from 0 to running code in no time, with guarantees that everything works.  Remember how we essentially had to
-install and set up everything twice, once for Webpack and once for Karma?
+* Developers can go from 0 to running code in no time, with guarantees that everything works.
 * You can immediately start writing code and don't have to make decisions about where files should go or what sort of configuration you need.
 * Every project using this framework has the same shape, meaning you can jump into existing projects with a lot of context learned
 from the last one. Things learned from one project apply to the next.
@@ -416,7 +415,7 @@ The downsides are flexibility.  If the defaults that are set up don't work for y
 suffers the same problem as Webpack when there are internal failures—they are opaque and essentially impossible to debug.  But,
 because the end-to-end system is designed together, by one team, this is less likely to happen.
 
-Webpack, Karma, Babel, etc. are all a hybrid of these two approaches.  They have all of the downsides and few of the upsides.
+Webpack, Babel, etc. are all a hybrid of these two approaches.  They have all of the downsides and few of the upsides.
 Each new project is a snowflake that must be hand-crafted.  Each minor update to underlying libraries has a high chance of
 breaking things, because nothing was designed to interoperate in a good way, nor designed together.  You also have a pretty high
 bar to getting a workable setup going—look how long it took us, and we aren't even using a front-end view framework like React or
@@ -437,3 +436,6 @@ ecosystem where many could contribute, and tools would be easy to understand.
 Take these lessons with you as you design software.  If you aren't committed to developer or user ergonomics, if you aren't
 committed to making a fully integrated system that “just works”, design your system around small, single-function tools that have
 a clear means of interoperation.  You can always bring them together, but you can never tear them apart.
+
+Before we say our final goodbyes, I want to share some thoughts around adopting Webpack on your project, given that we aren't
+going to see some of the solutions I outlined above.
