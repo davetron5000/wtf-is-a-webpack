@@ -145,7 +145,39 @@ To use this, we'll add the `plugins:` key in our `.babelrc` file:
 }
 !END CREATE_FILE
 
-Now, when we re-run our tests, they pass, since the new syntax as transpiled by Babel:
+Now, when we re-run our tests, they…still don't pass.
+
+!SH{nonzero} yarn test
+
+Babel 7.4 includes a breaking change, because of course it does.  To be honest, I don't know what the problem
+actually is, because the way Babel functions is entirely opaque and unobservable.  There's somethig going on with
+polyfills, but when we dig deeper we find that the way we are organizing tests is executing tests in other
+packages in `node_modules`.  UGH.
+
+Let's just get through this.  Our `.babelrc` actually requires a bunch of configuration to the preset, thus making
+it not very pre-set.
+
+!CREATE_FILE{language=json} .babelrc
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "corejs": { version: 3, proposals: true }
+      }
+    ]
+  ],
+  "plugins": ["@babel/plugin-proposal-optional-chaining"]
+}
+!END CREATE_FILE
+
+We also need to now explicitly add `core-js` as well as a package called `rengerator-runtime`:
+
+!SH yarn add -D core-js@3 regenerator-runtime
+
+And *now* `yarn test` works, and inadvertently runs a bunch of other tests.  But it supports the chaining syntax
+at least!
 
 !SH yarn test
 

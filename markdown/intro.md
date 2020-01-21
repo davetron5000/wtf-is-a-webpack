@@ -312,7 +312,7 @@ And just think how much we can accomplish with just eight lines of configuration
 
 So, what's next?
 
-!AD "Webpack with Rails" "Rails makes all this easy" http://bit.ly/dcbang2 "Buy Now $24.95" http://full-stack-rails.com/cover.jpg
+!AD "Webpack with Rails" "Rails makes all this easy" http://bit.ly/dcrails6 "Buy Now $24.95" http://naildrivin5.com/images/rails6.jpg
 
 There's a lot we aren't doing, that we need to do on any real project, such as:
 

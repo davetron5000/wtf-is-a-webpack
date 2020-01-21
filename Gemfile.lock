@@ -23,6 +23,3 @@ DEPENDENCIES
   rake
   redcarpet
   sass
-
-BUNDLED WITH
-   1.15.4
